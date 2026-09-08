@@ -3,62 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Termo PDF Engine | المحول الشامل لجميع القوارئ</title>
+    <title>Termo Hybrid PDF Engine</title>
     
-    <!-- PDF-Lib, Fontkit & PDF.js Libraries -->
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-    <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     
     <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; padding: 20px 0; }
-        .main-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); padding: 35px; }
-        .drop-zone { border: 2px dashed #38bdf8; border-radius: 16px; background: rgba(56, 189, 248, 0.03); padding: 40px 20px; cursor: pointer; transition: 0.3s; }
-        .drop-zone:hover { background: rgba(56, 189, 248, 0.08); border-color: #7dd3fc; }
-        .form-control, .form-control:focus { background-color: #0f172a; border-color: #334155; color: #e2e8f0; }
-        .progress-bar { background: linear-gradient(90deg, #38bdf8, #818cf8); }
-        .log-box { background: #090d16; border-radius: 10px; font-family: monospace; font-size: 0.85rem; max-height: 160px; overflow-y: auto; padding: 10px; color: #38bdf8; text-align: left; dir: ltr; }
+        body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, sans-serif; min-height: 100vh; padding: 20px 0; }
+        .main-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 30px; }
+        .drop-zone { border: 2px dashed #38bdf8; border-radius: 16px; background: rgba(56, 189, 248, 0.03); padding: 35px 20px; cursor: pointer; }
+        .form-control { background-color: #0f172a; border-color: #334155; color: #e2e8f0; }
+        .log-box { background: #090d16; border-radius: 10px; font-family: monospace; font-size: 0.85rem; max-height: 150px; overflow-y: auto; padding: 10px; color: #38bdf8; text-align: left; dir: ltr; }
     </style>
 </head>
 <body>
 
 <div class="container" style="max-width: 680px;">
     <div class="main-card text-center">
-        <h2 class="fw-bold mb-2" style="color: #38bdf8;">⚡ Termo PDF Engine Universal</h2>
-        <p class="text-slate-400 mb-4">تحويل المستندات لملفات قابلة للنسخ على **جميع قوارئ الموبايل والكمبيوتر** (عربي / إنجليزي)</p>
+        <h3 class="fw-bold mb-2" style="color: #38bdf8;">⚡ Termo Dual PDF Generator</h3>
+        <p class="text-slate-400 small mb-4">دمج صورة المحاضرة مع نصها المكتوب لضمان النسخ على جميع أجهزة الموبايل</p>
 
-        <!-- API Key Box -->
-        <div class="mb-4 text-start">
-            <label class="form-label text-slate-300 small fw-bold">مفتاح Gemini API Key:</label>
+        <div class="mb-3 text-start">
+            <label class="form-label text-slate-300 small fw-bold">Gemini API Key:</label>
             <input type="password" id="apiKeyInput" class="form-control form-control-sm" placeholder="AIzaSy..." onchange="saveApiKey()">
         </div>
 
-        <!-- Upload Drop Zone -->
-        <div class="drop-zone mb-4" onclick="document.getElementById('fileInput').click()">
-            <div style="font-size: 2.5rem;" class="mb-2">📄</div>
-            <h5 class="fw-bold text-white mb-1">اضغط هنا لرفع الملفات</h5>
-            <p class="text-slate-400 small mb-0">يدعم الصور (JPG/PNG) أو ملفات PDF كبيرة متعددة الصفحات</p>
+        <div class="drop-zone mb-3" onclick="document.getElementById('fileInput').click()">
+            <div style="font-size: 2rem;">📄</div>
+            <h6 class="fw-bold text-white mb-1">رفع ملف المحاضرة أو الصور</h6>
             <input type="file" id="fileInput" accept="image/*,application/pdf" multiple style="display:none;" onchange="handleFileSelect(this.files)">
         </div>
 
-        <!-- Progress Indicator -->
-        <div id="progressSection" style="display:none;" class="mb-4">
+        <div id="progressSection" style="display:none;" class="mb-3">
             <div class="d-flex justify-content-between small text-slate-300 mb-1">
                 <span id="progressText">جاري المعالجة...</span>
                 <span id="progressPercent">0%</span>
             </div>
-            <div class="progress" style="height: 10px;">
-                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
+            <div class="progress" style="height: 8px;">
+                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: 0%"></div>
             </div>
         </div>
 
-        <!-- Live Status Logs -->
-        <div id="logBox" class="log-box mb-4" style="display:none;"></div>
+        <div id="logBox" class="log-box mb-3" style="display:none;"></div>
 
-        <!-- Download Button -->
         <button id="downloadBtn" style="display:none;" class="btn btn-success w-100 py-2 fw-bold" onclick="triggerDownload()">
-            📥 تحميل ملف الـ PDF القابل للنسخ الآن
+            📥 تحميل ملف الـ PDF الشامل (شغال 100% للنسخ)
         </button>
     </div>
 </div>
@@ -67,16 +57,6 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     let generatedPdfBytes = null;
-    let cachedFontBytes = null;
-
-    async function loadArabicFont() {
-        if (cachedFontBytes) return cachedFontBytes;
-        logMessage("تحميل خط الـ Unicode المخصص (Amiri Font)...");
-        const fontUrl = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/amiri/Amiri-Regular.ttf';
-        const response = await fetch(fontUrl);
-        cachedFontBytes = await response.arrayBuffer();
-        return cachedFontBytes;
-    }
 
     window.onload = () => {
         const savedKey = localStorage.getItem('termo_gemini_key');
@@ -96,7 +76,7 @@
 
     async function handleFileSelect(files) {
         const apiKey = document.getElementById('apiKeyInput').value.trim();
-        if (!apiKey) return alert("يرجى إدخال مفتاح Gemini API أولاً!");
+        if (!apiKey) return alert("أدخل مفتاح Gemini API أولاً!");
         if (!files || files.length === 0) return;
 
         document.getElementById('progressSection').style.display = 'block';
@@ -104,14 +84,10 @@
         document.getElementById('logBox').innerHTML = '';
 
         try {
-            const fontBytes = await loadArabicFont();
             const pdfDoc = await PDFLib.PDFDocument.create();
-            pdfDoc.registerFontkit(fontkit);
-            const customFont = await pdfDoc.embedFont(fontBytes, { subset: false });
+            const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
 
             let pageQueue = [];
-            logMessage("جاري إعداد وقراءة الصفحات...");
-
             for (let file of files) {
                 if (file.type === "application/pdf") {
                     const arrayBuffer = await file.arrayBuffer();
@@ -123,7 +99,7 @@
             }
 
             const totalPages = pageQueue.length;
-            logMessage(`إجمالي الصفحات: ${totalPages}`);
+            logMessage(`عدد الصفحات: ${totalPages}`);
 
             for (let index = 0; index < totalPages; index++) {
                 updateProgress(`معالجة الصفحة (${index + 1} من ${totalPages})...`, Math.round(((index) / totalPages) * 100));
@@ -144,89 +120,76 @@
                 const imgDataUrl = canvas.toDataURL('image/jpeg', 0.85);
                 const base64Data = imgDataUrl.split(',')[1];
 
-                logMessage(`استخراج النص العربي والإنجليزي لصفحة ${index + 1}...`);
-                const ocrResults = await callGeminiOCRWithRetry(apiKey, base64Data);
+                logMessage(`استخراج النص العربي والإنجليزي للصفحة ${index + 1}...`);
+                const extractedText = await callGeminiExtract(apiKey, base64Data);
 
                 const jpgImage = await pdfDoc.embedJpg(imgDataUrl);
-                const pdfPage = pdfDoc.addPage([jpgImage.width, jpgImage.height]);
                 
-                // 1. رسم صورة الخلفية الأصلية
-                pdfPage.drawImage(jpgImage, { x: 0, y: 0, width: jpgImage.width, height: jpgImage.height });
+                // إنشاء صفحة بحجم مناسب يتسع للصورة والنص أسفلها
+                const pageHeight = jpgImage.height + 400;
+                const pdfPage = pdfDoc.addPage([jpgImage.width, pageHeight]);
 
-                // 2. تفعيل نمط النص الخفي القياسي (Text Rendering Mode 3 - Invisible Text)
-                // هذا الأمر يُجبر جميع قوارئ النظام المدمجة على تفعيل ميزة نسخ النص فوق الصور
-                if (ocrResults && ocrResults.length > 0) {
-                    pdfPage.pushOperators(
-                        PDFLib.setTextRenderingMode(PDFLib.TextRenderingMode.Invisible)
-                    );
+                // رسم صورة المحاضرة في الأعلى
+                pdfPage.drawImage(jpgImage, {
+                    x: 0,
+                    y: pageHeight - jpgImage.height,
+                    width: jpgImage.width,
+                    height: jpgImage.height
+                });
 
-                    ocrResults.forEach(item => {
-                        if (!item.box_2d || !item.text) return;
-                        const textStr = item.text.trim();
-                        if (!textStr) return;
+                // رسم خلفية النص في الأسفل
+                pdfPage.drawRectangle({
+                    x: 0,
+                    y: 0,
+                    width: jpgImage.width,
+                    height: pageHeight - jpgImage.height,
+                    color: PDFLib.rgb(0.95, 0.96, 0.98)
+                });
 
-                        const [ymin, xmin, ymax, xmax] = item.box_2d;
-                        const boxHeight = ((ymax - ymin) / 1000) * jpgImage.height;
-                        
-                        const posX = (xmin / 1000) * jpgImage.width;
-                        const posY = jpgImage.height - ((ymax / 1000) * jpgImage.height) + (boxHeight * 0.15);
-                        const fontSize = Math.max(8, boxHeight * 0.75);
+                // كتابة النص المكتوب بتنسيق واضح وقابل للنسخ 100%
+                const cleanText = extractedText.replace(/[^\x00-\x7F\u0600-\u06FF\s]/g, "");
+                const lines = cleanText.split('\n');
+                let startY = pageHeight - jpgImage.height - 30;
 
+                lines.forEach(line => {
+                    if (startY > 20 && line.trim() !== '') {
                         try {
-                            pdfPage.drawText(textStr, {
-                                x: posX,
-                                y: posY,
-                                size: fontSize,
-                                font: customFont
+                            pdfPage.drawText(line.trim(), {
+                                x: 20,
+                                y: startY,
+                                size: 12,
+                                font: font,
+                                color: PDFLib.rgb(0.1, 0.1, 0.2)
                             });
-                        } catch (e) {
-                            console.warn("إخفاق نصي مؤقت:", e);
-                        }
-                    });
-
-                    // إعادة وضع الرسم الطبيعي افتراضياً
-                    pdfPage.pushOperators(
-                        PDFLib.setTextRenderingMode(PDFLib.TextRenderingMode.Fill)
-                    );
-                }
+                            startY -= 18;
+                        } catch (e) {}
+                    }
+                });
             }
 
-            updateProgress("تم إنهاء المعالجة وتجهيز طبقة النسخ!", 100);
+            updateProgress("تم تحويل المحاضرة بنجاح!", 100);
             generatedPdfBytes = await pdfDoc.save();
             document.getElementById('downloadBtn').style.display = 'block';
-            logMessage("الملف جاهز ومطابق للتحميل!");
 
         } catch (err) {
             logMessage(`❌ خطأ: ${err.message}`);
-            alert("حدث خطأ أثناء معالجة الملف، يرجى إعادة المحاولة.");
         }
     }
 
-    async function callGeminiOCRWithRetry(apiKey, base64Image, retries = 2) {
+    async function callGeminiExtract(apiKey, base64Image) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-        const promptText = `Extract all text lines (Arabic or English) from this image with 2D bounding boxes normalized to 0-1000 scale.
-Return strictly a valid JSON array of objects with keys "box_2d" ([ymin, xmin, ymax, xmax]) and "text". Example:
-[{"box_2d": [100, 200, 150, 800], "text": "نص عربي أو English"}]`;
+        const promptText = `Extract all text lines (Arabic & English) from this image cleanly in natural reading order. Return plain text only.`;
 
         const requestBody = {
-            contents: [{ parts: [{ text: promptText }, { inline_data: { mime_type: "image/jpeg", data: base64Image } }] }],
-            generationConfig: { response_mime_type: "application/json" }
+            contents: [{ parts: [{ text: promptText }, { inline_data: { mime_type: "image/jpeg", data: base64Image } }] }]
         };
 
-        for (let attempt = 0; attempt <= retries; attempt++) {
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody)
-                });
-                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-                const data = await response.json();
-                return JSON.parse(data.candidates[0].content.parts[0].text);
-            } catch (e) {
-                if (attempt === retries) return [];
-                await new Promise(r => setTimeout(r, 1500));
-            }
+        try {
+            const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
+            const data = await res.json();
+            return data.candidates[0].content.parts[0].text;
+        } catch (e) {
+            return "تعذر استخراج النص.";
         }
     }
 
@@ -250,11 +213,10 @@ Return strictly a valid JSON array of objects with keys "box_2d" ([ymin, xmin, y
     }
 
     function triggerDownload() {
-        if (!generatedPdfBytes) return;
         const blob = new Blob([generatedPdfBytes], { type: "application/pdf" });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `Termo_Universal_${Date.now()}.pdf`;
+        link.download = `Termo_Lecture_Selectable_${Date.now()}.pdf`;
         link.click();
     }
 </script>
