@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Termo PDF Engine | محول المستندات الذكي</title>
+    <title>Termo PDF Engine | المحول الشامل لجميع القوارئ</title>
     
     <!-- PDF-Lib, Fontkit & PDF.js Libraries -->
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
@@ -18,15 +18,15 @@
         .drop-zone:hover { background: rgba(56, 189, 248, 0.08); border-color: #7dd3fc; }
         .form-control, .form-control:focus { background-color: #0f172a; border-color: #334155; color: #e2e8f0; }
         .progress-bar { background: linear-gradient(90deg, #38bdf8, #818cf8); }
-        .log-box { background: #090d16; border-radius: 10px; font-family: monospace; font-size: 0.85rem; max-height: 150px; overflow-y: auto; padding: 10px; color: #38bdf8; text-align: left; dir: ltr; }
+        .log-box { background: #090d16; border-radius: 10px; font-family: monospace; font-size: 0.85rem; max-height: 160px; overflow-y: auto; padding: 10px; color: #38bdf8; text-align: left; dir: ltr; }
     </style>
 </head>
 <body>
 
 <div class="container" style="max-width: 680px;">
     <div class="main-card text-center">
-        <h2 class="fw-bold mb-2" style="color: #38bdf8;">⚡ Termo PDF Engine (عربي / إنجليزي)</h2>
-        <p class="text-slate-400 mb-4">تحويل الصور والبحوث إلى ملفات **مطابقة 100%** وقابلة لنسخ وتحديد النص</p>
+        <h2 class="fw-bold mb-2" style="color: #38bdf8;">⚡ Termo PDF Engine Universal</h2>
+        <p class="text-slate-400 mb-4">تحويل المستندات لملفات قابلة للنسخ على **جميع قوارئ الموبايل والكمبيوتر** (عربي / إنجليزي)</p>
 
         <!-- API Key Box -->
         <div class="mb-4 text-start">
@@ -38,7 +38,7 @@
         <div class="drop-zone mb-4" onclick="document.getElementById('fileInput').click()">
             <div style="font-size: 2.5rem;" class="mb-2">📄</div>
             <h5 class="fw-bold text-white mb-1">اضغط هنا لرفع الملفات</h5>
-            <p class="text-slate-400 small mb-0">يدعم صور (JPG/PNG) أو ملفات PDF كبيرة متعددة الصفحات</p>
+            <p class="text-slate-400 small mb-0">يدعم الصور (JPG/PNG) أو ملفات PDF كبيرة متعددة الصفحات</p>
             <input type="file" id="fileInput" accept="image/*,application/pdf" multiple style="display:none;" onchange="handleFileSelect(this.files)">
         </div>
 
@@ -64,20 +64,17 @@
 </div>
 
 <script>
-    // Initialize PDF.js Worker
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     let generatedPdfBytes = null;
     let cachedFontBytes = null;
 
-    // Load Arabic Unicode Font into memory
     async function loadArabicFont() {
         if (cachedFontBytes) return cachedFontBytes;
-        logMessage("جاري تحميل خط اللغة العربية والإنجليزية (Amiri Font)...");
+        logMessage("تحميل خط الـ Unicode المخصص (Amiri Font)...");
         const fontUrl = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/amiri/Amiri-Regular.ttf';
         const response = await fetch(fontUrl);
         cachedFontBytes = await response.arrayBuffer();
-        logMessage("تم تحميل الخط المخصص بنجاح!");
         return cachedFontBytes;
     }
 
@@ -87,8 +84,7 @@
     };
 
     function saveApiKey() {
-        const key = document.getElementById('apiKeyInput').value.trim();
-        localStorage.setItem('termo_gemini_key', key);
+        localStorage.setItem('termo_gemini_key', document.getElementById('apiKeyInput').value.trim());
     }
 
     function logMessage(msg) {
@@ -100,11 +96,7 @@
 
     async function handleFileSelect(files) {
         const apiKey = document.getElementById('apiKeyInput').value.trim();
-        if (!apiKey) {
-            alert("يرجى إدخال مفتاح Gemini API أولاً!");
-            return;
-        }
-
+        if (!apiKey) return alert("يرجى إدخال مفتاح Gemini API أولاً!");
         if (!files || files.length === 0) return;
 
         document.getElementById('progressSection').style.display = 'block';
@@ -112,33 +104,29 @@
         document.getElementById('logBox').innerHTML = '';
 
         try {
-            // Register Fontkit and embed Unicode font for Full Arabic/English support
             const fontBytes = await loadArabicFont();
             const pdfDoc = await PDFLib.PDFDocument.create();
             pdfDoc.registerFontkit(fontkit);
             const customFont = await pdfDoc.embedFont(fontBytes, { subset: false });
 
             let pageQueue = [];
-            logMessage("جاري إعداد وتحليل الملفات...");
+            logMessage("جاري إعداد وقراءة الصفحات...");
 
             for (let file of files) {
                 if (file.type === "application/pdf") {
                     const arrayBuffer = await file.arrayBuffer();
                     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        pageQueue.push({ type: 'pdf_page', pdf, pageNum: i });
-                    }
+                    for (let i = 1; i <= pdf.numPages; i++) pageQueue.push({ type: 'pdf_page', pdf, pageNum: i });
                 } else if (file.type.startsWith("image/")) {
                     pageQueue.push({ type: 'image_file', file });
                 }
             }
 
             const totalPages = pageQueue.length;
-            logMessage(`إجمالي الصفحات المكتشفة: ${totalPages}`);
+            logMessage(`إجمالي الصفحات: ${totalPages}`);
 
             for (let index = 0; index < totalPages; index++) {
-                const percent = Math.round(((index) / totalPages) * 100);
-                updateProgress(`معالجة الصفحة (${index + 1} من ${totalPages})...`, percent);
+                updateProgress(`معالجة الصفحة (${index + 1} من ${totalPages})...`, Math.round(((index) / totalPages) * 100));
 
                 const item = pageQueue[index];
                 let canvas;
@@ -147,10 +135,8 @@
                     const page = await item.pdf.getPage(item.pageNum);
                     const viewport = page.getViewport({ scale: 1.5 });
                     canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = viewport.width;
-                    canvas.height = viewport.height;
-                    await page.render({ canvasContext: ctx, viewport }).promise;
+                    canvas.width = viewport.width; canvas.height = viewport.height;
+                    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
                 } else {
                     canvas = await imageToCanvas(item.file);
                 }
@@ -158,23 +144,28 @@
                 const imgDataUrl = canvas.toDataURL('image/jpeg', 0.85);
                 const base64Data = imgDataUrl.split(',')[1];
 
-                logMessage(`جاري استخراج النصوص (عربي/إنجليزي) للصفحة ${index + 1}...`);
+                logMessage(`استخراج النص العربي والإنجليزي لصفحة ${index + 1}...`);
                 const ocrResults = await callGeminiOCRWithRetry(apiKey, base64Data);
 
                 const jpgImage = await pdfDoc.embedJpg(imgDataUrl);
                 const pdfPage = pdfDoc.addPage([jpgImage.width, jpgImage.height]);
+                
+                // 1. رسم صورة الخلفية الأصلية
                 pdfPage.drawImage(jpgImage, { x: 0, y: 0, width: jpgImage.width, height: jpgImage.height });
 
-                // Draw Invisible Unicode Text Layer
+                // 2. تفعيل نمط النص الخفي القياسي (Text Rendering Mode 3 - Invisible Text)
+                // هذا الأمر يُجبر جميع قوارئ النظام المدمجة على تفعيل ميزة نسخ النص فوق الصور
                 if (ocrResults && ocrResults.length > 0) {
+                    pdfPage.pushOperators(
+                        PDFLib.setTextRenderingMode(PDFLib.TextRenderingMode.Invisible)
+                    );
+
                     ocrResults.forEach(item => {
                         if (!item.box_2d || !item.text) return;
-
                         const textStr = item.text.trim();
                         if (!textStr) return;
 
                         const [ymin, xmin, ymax, xmax] = item.box_2d;
-                        const boxWidth = ((xmax - xmin) / 1000) * jpgImage.width;
                         const boxHeight = ((ymax - ymin) / 1000) * jpgImage.height;
                         
                         const posX = (xmin / 1000) * jpgImage.width;
@@ -186,42 +177,39 @@
                                 x: posX,
                                 y: posY,
                                 size: fontSize,
-                                font: customFont,
-                                opacity: 0.001 // Invisible text overlay for selection
+                                font: customFont
                             });
                         } catch (e) {
-                            console.warn("إخفاق مؤقت لسلسلة نصية:", e);
+                            console.warn("إخفاق نصي مؤقت:", e);
                         }
                     });
+
+                    // إعادة وضع الرسم الطبيعي افتراضياً
+                    pdfPage.pushOperators(
+                        PDFLib.setTextRenderingMode(PDFLib.TextRenderingMode.Fill)
+                    );
                 }
             }
 
-            updateProgress("تم تحويل جميع الصفحات واكتشاف النصوص بنجاح!", 100);
+            updateProgress("تم إنهاء المعالجة وتجهيز طبقة النسخ!", 100);
             generatedPdfBytes = await pdfDoc.save();
             document.getElementById('downloadBtn').style.display = 'block';
-            logMessage("الملف النهائي جاهز ومكتمل للتنزيل!");
+            logMessage("الملف جاهز ومطابق للتحميل!");
 
         } catch (err) {
-            console.error(err);
             logMessage(`❌ خطأ: ${err.message}`);
-            alert("حدث خطأ أثناء معالجة الملف، يُرجى التأكد من مفتاح API ومحاولة رفع الملف مجدداً.");
+            alert("حدث خطأ أثناء معالجة الملف، يرجى إعادة المحاولة.");
         }
     }
 
     async function callGeminiOCRWithRetry(apiKey, base64Image, retries = 2) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-        
         const promptText = `Extract all text lines (Arabic or English) from this image with 2D bounding boxes normalized to 0-1000 scale.
-Return strictly a valid JSON array of objects with keys "box_2d" ([ymin, xmin, ymax, xmax]) and "text". Do not wrap in markdown or codeblocks. Example:
-[{"box_2d": [100, 200, 150, 800], "text": "نص عربي أو إنجليزي"}]`;
+Return strictly a valid JSON array of objects with keys "box_2d" ([ymin, xmin, ymax, xmax]) and "text". Example:
+[{"box_2d": [100, 200, 150, 800], "text": "نص عربي أو English"}]`;
 
         const requestBody = {
-            contents: [{
-                parts: [
-                    { text: promptText },
-                    { inline_data: { mime_type: "image/jpeg", data: base64Image } }
-                ]
-            }],
+            contents: [{ parts: [{ text: promptText }, { inline_data: { mime_type: "image/jpeg", data: base64Image } }] }],
             generationConfig: { response_mime_type: "application/json" }
         };
 
@@ -232,12 +220,9 @@ Return strictly a valid JSON array of objects with keys "box_2d" ([ymin, xmin, y
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestBody)
                 });
-
-                if (!response.ok) throw new Error(`API Error Code: ${response.status}`);
-                
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
                 const data = await response.json();
-                let jsonText = data.candidates[0].content.parts[0].text;
-                return JSON.parse(jsonText);
+                return JSON.parse(data.candidates[0].content.parts[0].text);
             } catch (e) {
                 if (attempt === retries) return [];
                 await new Promise(r => setTimeout(r, 1500));
@@ -250,10 +235,8 @@ Return strictly a valid JSON array of objects with keys "box_2d" ([ymin, xmin, y
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
+                canvas.width = img.width; canvas.height = img.height;
+                canvas.getContext('2d').drawImage(img, 0, 0);
                 resolve(canvas);
             };
             img.src = URL.createObjectURL(file);
@@ -271,10 +254,9 @@ Return strictly a valid JSON array of objects with keys "box_2d" ([ymin, xmin, y
         const blob = new Blob([generatedPdfBytes], { type: "application/pdf" });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `Termo_Searchable_Doc_${Date.now()}.pdf`;
+        link.download = `Termo_Universal_${Date.now()}.pdf`;
         link.click();
     }
 </script>
-
 </body>
 </html>
