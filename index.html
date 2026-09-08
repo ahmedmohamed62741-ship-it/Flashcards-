@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termo PDF Engine | محول المستندات الذكي القابل للنسخ</title>
+    
+    <!-- PDF-Lib & PDF.js Libraries -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; padding: 20px 0; }
+        .main-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); padding: 35px; }
+        .drop-zone { border: 2px dashed #38bdf8; border-radius: 16px; background: rgba(56, 189, 248, 0.03); padding: 40px 20px; cursor: pointer; transition: 0.3s; }
+        .drop-zone:hover { background: rgba(56, 189, 248, 0.08); border-color: #7dd3fc; }
+        .form-control, .form-control:focus { background-color: #0f172a; border-color: #334155; color: #e2e8f0; }
+        .btn-custom { background: linear-gradient(135deg, #0284c7, #2563eb); border: none; font-weight: bold; padding: 12px 28px; border-radius: 12px; }
+        .btn-custom:hover { opacity: 0.9; }
+        .progress-bar { background: linear-gradient(90deg, #38bdf8, #818cf8); }
+        .log-box { background: #090d16; border-radius: 10px; font-family: monospace; font-size: 0.85rem; max-height: 150px; overflow-y: auto; padding: 10px; color: #38bdf8; text-align: left; dir: ltr; }
+    </style>
+</head>
+<body>
+
+<div class="container" style="max-width: 680px;">
+    <div class="main-card text-center">
+        <h2 class="fw-bold mb-2" style="color: #38bdf8;">⚡ Termo PDF Engine</h2>
+        <p class="text-slate-400 mb-4">تحويل المستندات والبحوث المصورة لملفات **مطابقة 100%** وقابلة لنسخ النصوص</p>
+
+        <!-- API Key Box -->
+        <div class="mb-4 text-start">
+            <label class="form-label text-slate-300 small fw-bold">مفتاح Gemini API Key:</label>
+            <input type="password" id="apiKeyInput" class="form-control form-control-sm" placeholder="AIzaSy..." onchange="saveApiKey()">
+        </div>
+
+        <!-- Upload Drop Zone -->
+        <div class="drop-zone mb-4" onclick="document.getElementById('fileInput').click()">
+            <div style="font-size: 2.5rem;" class="mb-2">📄</div>
+            <h5 class="fw-bold text-white mb-1">اضغط هنا لرفع الملفات</h5>
+            <p class="text-slate-400 small mb-0">يدعم صور (JPG/PNG) أو ملفات PDF كبيرة متعدده الصفحات</p>
+            <input type="file" id="fileInput" accept="image/*,application/pdf" multiple style="display:none;" onchange="handleFileSelect(this.files)">
+        </div>
+
+        <!-- Progress Indicator -->
+        <div id="progressSection" style="display:none;" class="mb-4">
+            <div class="d-flex justify-content-between small text-slate-300 mb-1">
+                <span id="progressText">جاري المعالجة...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress" style="height: 10px;">
+                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Live Status Logs -->
+        <div id="logBox" class="log-box mb-4" style="display:none;"></div>
+
+        <!-- Download Button -->
+        <button id="downloadBtn" style="display:none;" class="btn btn-success w-100 py-2 fw-bold" onclick="triggerDownload()">
+            📥 تحميل ملف الـ PDF القابل للنسخ الآن
+        </button>
+    </div>
+</div>
+
+<script>
+    // Initialize PDF.js Worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    let generatedPdfBytes = null;
+
+    // Save and Load API Key locally
+    window.onload = () => {
+        const savedKey = localStorage.getItem('termo_gemini_key');
+        if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
+    };
+
+    function saveApiKey() {
+        const key = document.getElementById('apiKeyInput').value.trim();
+        localStorage.setItem('termo_gemini_key', key);
+    }
+
+    function logMessage(msg) {
+        const logBox = document.getElementById('logBox');
+        logBox.style.display = 'block';
+        logBox.innerHTML += `> ${msg}<br>`;
+        logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    async function handleFileSelect(files) {
+        const apiKey = document.getElementById('apiKeyInput').value.trim();
+        if (!apiKey) {
+            alert("يرجى إدخال مفتاح Gemini API أولاً!");
+            return;
+        }
+
+        if (!files || files.length === 0) return;
+
+        document.getElementById('progressSection').style.display = 'block';
+        document.getElementById('downloadBtn').style.display = 'none';
+        document.getElementById('logBox').innerHTML = '';
+        
+        try {
+            const pdfDoc = await PDFLib.PDFDocument.create();
+            let pageQueue = [];
+
+            logMessage("جاري إعداد وتحليل الملفات...");
+
+            // Process uploaded files (PDF or Images)
+            for (let file of files) {
+                if (file.type === "application/pdf") {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        pageQueue.push({ type: 'pdf_page', pdf, pageNum: i });
+                    }
+                } else if (file.type.startsWith("image/")) {
+                    pageQueue.push({ type: 'image_file', file });
+                }
+            }
+
+            const totalPages = pageQueue.length;
+            logMessage(`إجمالي الصفحات المكتشفة: ${totalPages}`);
+
+            // Process pages sequentially to maintain high speed and zero memory crashes
+            for (let index = 0; index < totalPages; index++) {
+                const percent = Math.round(((index) / totalPages) * 100);
+                updateProgress(`جاري معالجة الصفحة (${index + 1} من ${totalPages})...`, percent);
+
+                const item = pageQueue[index];
+                let canvas;
+
+                if (item.type === 'pdf_page') {
+                    const page = await item.pdf.getPage(item.pageNum);
+                    const viewport = page.getViewport({ scale: 1.5 }); // High-res scale
+                    canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    await page.render({ canvasContext: ctx, viewport }).promise;
+                } else {
+                    canvas = await imageToCanvas(item.file);
+                }
+
+                // Compress image canvas for light API transmission
+                const imgDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                const base64Data = imgDataUrl.split(',')[1];
+
+                // 1. Get Text Bounding Boxes via Gemini API
+                logMessage(`جاري تحليل نصوص الصفحة ${index + 1} بواسطة الذكاء الاصطناعي...`);
+                const ocrResults = await callGeminiOCRWithRetry(apiKey, base64Data);
+
+                // 2. Embed original background image into PDF page
+                const jpgImage = await pdfDoc.embedJpg(imgDataUrl);
+                const pdfPage = pdfDoc.addPage([jpgImage.width, jpgImage.height]);
+                pdfPage.drawImage(jpgImage, { x: 0, y: 0, width: jpgImage.width, height: jpgImage.height });
+
+                // 3. Draw Invisible Text Layer (Opacity = 0) with strict coordinate mapping
+                if (ocrResults && ocrResults.length > 0) {
+                    const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+                    
+                    ocrResults.forEach(item => {
+                        if (!item.box_2d || !item.text) return;
+                        
+                        // Normalized coordinates from Gemini (0-1000 scale)
+                        const [ymin, xmin, ymax, xmax] = item.box_2d;
+                        
+                        const boxWidth = ((xmax - xmin) / 1000) * jpgImage.width;
+                        const boxHeight = ((ymax - ymin) / 1000) * jpgImage.height;
+                        
+                        const posX = (xmin / 1000) * jpgImage.width;
+                        // Y-axis inversion logic for PDF coordinate system (0,0 is bottom-left)
+                        const posY = jpgImage.height - ((ymax / 1000) * jpgImage.height) + (boxHeight * 0.15);
+
+                        const fontSize = Math.max(8, boxHeight * 0.75);
+
+                        pdfPage.drawText(item.text, {
+                            x: posX,
+                            y: posY,
+                            size: fontSize,
+                            font: font,
+                            opacity: 0, // Invisible text overlay for selectable/copyable PDF
+                        });
+                    });
+                }
+            }
+
+            updateProgress("تم إنهاء المعالجة وتجميع الملف بنجاح!", 100);
+            generatedPdfBytes = await pdfDoc.save();
+            document.getElementById('downloadBtn').style.display = 'block';
+            logMessage("الملف جاهز للتحميل الآن!");
+
+        } catch (err) {
+            console.error(err);
+            logMessage(`❌ خطأ: ${err.message}`);
+            alert("حدث خطأ أثناء المعالجة، يرجى التأكد من الكود ومفتاح API.");
+        }
+    }
+
+    // Gemini API call with line bounding box extraction
+    async function callGeminiOCRWithRetry(apiKey, base64Image, retries = 2) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+        
+        const promptText = `Extract all text lines from this image with 2D bounding boxes normalized to 0-1000 scale.
+Return strictly a valid JSON array of objects with keys "box_2d" ([ymin, xmin, ymax, xmax]) and "text". Example:
+[{"box_2d": [100, 200, 150, 800], "text": "Sample text line"}]`;
+
+        const requestBody = {
+            contents: [{
+                parts: [
+                    { text: promptText },
+                    { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+                ]
+            }],
+            generationConfig: { response_mime_type: "application/json" }
+        };
+
+        for (let attempt = 0; attempt <= retries; attempt++) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) throw new Error(`API HTTP Error: ${response.status}`);
+                
+                const data = await response.json();
+                const jsonText = data.candidates[0].content.parts[0].text;
+                return JSON.parse(jsonText);
+            } catch (e) {
+                if (attempt === retries) return [];
+                await new Promise(r => setTimeout(r, 1500)); // Wait before retry
+            }
+        }
+    }
+
+    function imageToCanvas(file) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                resolve(canvas);
+            };
+            img.src = URL.createObjectURL(file);
+        });
+    }
+
+    function updateProgress(text, percent) {
+        document.getElementById('progressText').innerText = text;
+        document.getElementById('progressPercent').innerText = `${percent}%`;
+        document.getElementById('progressBar').style.width = `${percent}%`;
+    }
+
+    function triggerDownload() {
+        if (!generatedPdfBytes) return;
+        const blob = new Blob([generatedPdfBytes], { type: "application/pdf" });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Termo_Searchable_Doc_${Date.now()}.pdf`;
+        link.click();
+    }
+</script>
+
+</body>
+</html>
