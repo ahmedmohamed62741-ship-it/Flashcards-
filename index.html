@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Termo PDF Engine | محول المستندات الذكي القابل للنسخ</title>
+    <title>Termo PDF Engine | محول المستندات الذكي</title>
     
-    <!-- PDF-Lib & PDF.js Libraries -->
+    <!-- PDF-Lib, Fontkit & PDF.js Libraries -->
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     
@@ -16,8 +17,6 @@
         .drop-zone { border: 2px dashed #38bdf8; border-radius: 16px; background: rgba(56, 189, 248, 0.03); padding: 40px 20px; cursor: pointer; transition: 0.3s; }
         .drop-zone:hover { background: rgba(56, 189, 248, 0.08); border-color: #7dd3fc; }
         .form-control, .form-control:focus { background-color: #0f172a; border-color: #334155; color: #e2e8f0; }
-        .btn-custom { background: linear-gradient(135deg, #0284c7, #2563eb); border: none; font-weight: bold; padding: 12px 28px; border-radius: 12px; }
-        .btn-custom:hover { opacity: 0.9; }
         .progress-bar { background: linear-gradient(90deg, #38bdf8, #818cf8); }
         .log-box { background: #090d16; border-radius: 10px; font-family: monospace; font-size: 0.85rem; max-height: 150px; overflow-y: auto; padding: 10px; color: #38bdf8; text-align: left; dir: ltr; }
     </style>
@@ -26,8 +25,8 @@
 
 <div class="container" style="max-width: 680px;">
     <div class="main-card text-center">
-        <h2 class="fw-bold mb-2" style="color: #38bdf8;">⚡ Termo PDF Engine</h2>
-        <p class="text-slate-400 mb-4">تحويل المستندات والبحوث المصورة لملفات **مطابقة 100%** وقابلة لنسخ النصوص</p>
+        <h2 class="fw-bold mb-2" style="color: #38bdf8;">⚡ Termo PDF Engine (عربي / إنجليزي)</h2>
+        <p class="text-slate-400 mb-4">تحويل الصور والبحوث إلى ملفات **مطابقة 100%** وقابلة لنسخ وتحديد النص</p>
 
         <!-- API Key Box -->
         <div class="mb-4 text-start">
@@ -39,7 +38,7 @@
         <div class="drop-zone mb-4" onclick="document.getElementById('fileInput').click()">
             <div style="font-size: 2.5rem;" class="mb-2">📄</div>
             <h5 class="fw-bold text-white mb-1">اضغط هنا لرفع الملفات</h5>
-            <p class="text-slate-400 small mb-0">يدعم صور (JPG/PNG) أو ملفات PDF كبيرة متعدده الصفحات</p>
+            <p class="text-slate-400 small mb-0">يدعم صور (JPG/PNG) أو ملفات PDF كبيرة متعددة الصفحات</p>
             <input type="file" id="fileInput" accept="image/*,application/pdf" multiple style="display:none;" onchange="handleFileSelect(this.files)">
         </div>
 
@@ -69,8 +68,19 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     let generatedPdfBytes = null;
+    let cachedFontBytes = null;
 
-    // Save and Load API Key locally
+    // Load Arabic Unicode Font into memory
+    async function loadArabicFont() {
+        if (cachedFontBytes) return cachedFontBytes;
+        logMessage("جاري تحميل خط اللغة العربية والإنجليزية (Amiri Font)...");
+        const fontUrl = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/amiri/Amiri-Regular.ttf';
+        const response = await fetch(fontUrl);
+        cachedFontBytes = await response.arrayBuffer();
+        logMessage("تم تحميل الخط المخصص بنجاح!");
+        return cachedFontBytes;
+    }
+
     window.onload = () => {
         const savedKey = localStorage.getItem('termo_gemini_key');
         if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
@@ -100,14 +110,17 @@
         document.getElementById('progressSection').style.display = 'block';
         document.getElementById('downloadBtn').style.display = 'none';
         document.getElementById('logBox').innerHTML = '';
-        
-        try {
-            const pdfDoc = await PDFLib.PDFDocument.create();
-            let pageQueue = [];
 
+        try {
+            // Register Fontkit and embed Unicode font for Full Arabic/English support
+            const fontBytes = await loadArabicFont();
+            const pdfDoc = await PDFLib.PDFDocument.create();
+            pdfDoc.registerFontkit(fontkit);
+            const customFont = await pdfDoc.embedFont(fontBytes, { subset: false });
+
+            let pageQueue = [];
             logMessage("جاري إعداد وتحليل الملفات...");
 
-            // Process uploaded files (PDF or Images)
             for (let file of files) {
                 if (file.type === "application/pdf") {
                     const arrayBuffer = await file.arrayBuffer();
@@ -123,17 +136,16 @@
             const totalPages = pageQueue.length;
             logMessage(`إجمالي الصفحات المكتشفة: ${totalPages}`);
 
-            // Process pages sequentially to maintain high speed and zero memory crashes
             for (let index = 0; index < totalPages; index++) {
                 const percent = Math.round(((index) / totalPages) * 100);
-                updateProgress(`جاري معالجة الصفحة (${index + 1} من ${totalPages})...`, percent);
+                updateProgress(`معالجة الصفحة (${index + 1} من ${totalPages})...`, percent);
 
                 const item = pageQueue[index];
                 let canvas;
 
                 if (item.type === 'pdf_page') {
                     const page = await item.pdf.getPage(item.pageNum);
-                    const viewport = page.getViewport({ scale: 1.5 }); // High-res scale
+                    const viewport = page.getViewport({ scale: 1.5 });
                     canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     canvas.width = viewport.width;
@@ -143,68 +155,65 @@
                     canvas = await imageToCanvas(item.file);
                 }
 
-                // Compress image canvas for light API transmission
                 const imgDataUrl = canvas.toDataURL('image/jpeg', 0.85);
                 const base64Data = imgDataUrl.split(',')[1];
 
-                // 1. Get Text Bounding Boxes via Gemini API
-                logMessage(`جاري تحليل نصوص الصفحة ${index + 1} بواسطة الذكاء الاصطناعي...`);
+                logMessage(`جاري استخراج النصوص (عربي/إنجليزي) للصفحة ${index + 1}...`);
                 const ocrResults = await callGeminiOCRWithRetry(apiKey, base64Data);
 
-                // 2. Embed original background image into PDF page
                 const jpgImage = await pdfDoc.embedJpg(imgDataUrl);
                 const pdfPage = pdfDoc.addPage([jpgImage.width, jpgImage.height]);
                 pdfPage.drawImage(jpgImage, { x: 0, y: 0, width: jpgImage.width, height: jpgImage.height });
 
-                // 3. Draw Invisible Text Layer (Opacity = 0) with strict coordinate mapping
+                // Draw Invisible Unicode Text Layer
                 if (ocrResults && ocrResults.length > 0) {
-                    const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-                    
                     ocrResults.forEach(item => {
                         if (!item.box_2d || !item.text) return;
-                        
-                        // Normalized coordinates from Gemini (0-1000 scale)
+
+                        const textStr = item.text.trim();
+                        if (!textStr) return;
+
                         const [ymin, xmin, ymax, xmax] = item.box_2d;
-                        
                         const boxWidth = ((xmax - xmin) / 1000) * jpgImage.width;
                         const boxHeight = ((ymax - ymin) / 1000) * jpgImage.height;
                         
                         const posX = (xmin / 1000) * jpgImage.width;
-                        // Y-axis inversion logic for PDF coordinate system (0,0 is bottom-left)
                         const posY = jpgImage.height - ((ymax / 1000) * jpgImage.height) + (boxHeight * 0.15);
-
                         const fontSize = Math.max(8, boxHeight * 0.75);
 
-                        pdfPage.drawText(item.text, {
-                            x: posX,
-                            y: posY,
-                            size: fontSize,
-                            font: font,
-                            opacity: 0, // Invisible text overlay for selectable/copyable PDF
-                        });
+                        try {
+                            pdfPage.drawText(textStr, {
+                                x: posX,
+                                y: posY,
+                                size: fontSize,
+                                font: customFont,
+                                opacity: 0.001 // Invisible text overlay for selection
+                            });
+                        } catch (e) {
+                            console.warn("إخفاق مؤقت لسلسلة نصية:", e);
+                        }
                     });
                 }
             }
 
-            updateProgress("تم إنهاء المعالجة وتجميع الملف بنجاح!", 100);
+            updateProgress("تم تحويل جميع الصفحات واكتشاف النصوص بنجاح!", 100);
             generatedPdfBytes = await pdfDoc.save();
             document.getElementById('downloadBtn').style.display = 'block';
-            logMessage("الملف جاهز للتحميل الآن!");
+            logMessage("الملف النهائي جاهز ومكتمل للتنزيل!");
 
         } catch (err) {
             console.error(err);
             logMessage(`❌ خطأ: ${err.message}`);
-            alert("حدث خطأ أثناء المعالجة، يرجى التأكد من الكود ومفتاح API.");
+            alert("حدث خطأ أثناء معالجة الملف، يُرجى التأكد من مفتاح API ومحاولة رفع الملف مجدداً.");
         }
     }
 
-    // Gemini API call with line bounding box extraction
     async function callGeminiOCRWithRetry(apiKey, base64Image, retries = 2) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
         
-        const promptText = `Extract all text lines from this image with 2D bounding boxes normalized to 0-1000 scale.
-Return strictly a valid JSON array of objects with keys "box_2d" ([ymin, xmin, ymax, xmax]) and "text". Example:
-[{"box_2d": [100, 200, 150, 800], "text": "Sample text line"}]`;
+        const promptText = `Extract all text lines (Arabic or English) from this image with 2D bounding boxes normalized to 0-1000 scale.
+Return strictly a valid JSON array of objects with keys "box_2d" ([ymin, xmin, ymax, xmax]) and "text". Do not wrap in markdown or codeblocks. Example:
+[{"box_2d": [100, 200, 150, 800], "text": "نص عربي أو إنجليزي"}]`;
 
         const requestBody = {
             contents: [{
@@ -224,14 +233,14 @@ Return strictly a valid JSON array of objects with keys "box_2d" ([ymin, xmin, y
                     body: JSON.stringify(requestBody)
                 });
 
-                if (!response.ok) throw new Error(`API HTTP Error: ${response.status}`);
+                if (!response.ok) throw new Error(`API Error Code: ${response.status}`);
                 
                 const data = await response.json();
-                const jsonText = data.candidates[0].content.parts[0].text;
+                let jsonText = data.candidates[0].content.parts[0].text;
                 return JSON.parse(jsonText);
             } catch (e) {
                 if (attempt === retries) return [];
-                await new Promise(r => setTimeout(r, 1500)); // Wait before retry
+                await new Promise(r => setTimeout(r, 1500));
             }
         }
     }
