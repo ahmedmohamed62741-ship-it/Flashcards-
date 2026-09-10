@@ -81,9 +81,7 @@
             cursor: not-allowed;
         }
 
-        /* ---------------------------------------------------- */
-        /* STYLES FOR GENERATED ACADEMIC PDF DOCUMENT (Print Layout) */
-        /* ---------------------------------------------------- */
+        /* STYLES FOR GENERATED ACADEMIC PDF DOCUMENT */
         #pdfRenderArea {
             display: none;
             background-color: #ffffff;
@@ -120,7 +118,6 @@
             font-weight: bold;
         }
         
-        /* Grid Layout to minimize pages */
         .qa-container {
             display: flex;
             flex-direction: column;
@@ -131,7 +128,7 @@
             border-radius: 8px;
             padding: 10px 14px;
             background-color: #f8fafc;
-            page-break-inside: avoid; /* Prevents splitting a Q&A across pages */
+            page-break-inside: avoid;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         .question-title {
@@ -187,7 +184,7 @@
         <!-- API Key -->
         <div class="mb-4">
             <label class="form-label text-warning small fw-bold">🔑 Gemini API Key:</label>
-            <input type="password" id="apiKeyInput" class="form-control" placeholder="أدخل مفتاح AIzaSy..." onchange="saveApiKey()">
+            <input type="password" id="apiKeyInput" class="form-control" placeholder="أدخل مفتاح AIzaSy..." onkeyup="saveApiKey()" onchange="saveApiKey()">
         </div>
 
         <!-- Section 1: Text -->
@@ -203,8 +200,8 @@
             <div id="fileListNotice" class="small text-warning fw-bold"></div>
         </div>
 
-        <!-- Submit Button -->
-        <button id="processBtn" class="btn-luxury mb-3">
+        <!-- Submit Button linked directly with onclick -->
+        <button id="processBtn" onclick="startProcess()" class="btn-luxury mb-3">
             🚀 تحليل الملفات وإنشاء ملخص PDF فاخر (سؤال وجواب)
         </button>
 
@@ -237,7 +234,7 @@
     </div>
 </div>
 
-<!-- CONTAINER FOR PDF RENDERING (Hidden until generated) -->
+<!-- CONTAINER FOR PDF RENDERING -->
 <div class="container mt-4" style="max-width: 850px;">
     <div id="pdfRenderArea">
         <div class="pdf-header">
@@ -249,13 +246,12 @@
         </div>
 
         <div id="pdfContentList" class="qa-container">
-            <!-- Dynamic Q&A Cards will be injected here -->
+            <!-- Dynamic Q&A Cards -->
         </div>
     </div>
 </div>
 
 <script>
-    // قائمة النماذج المتاحة مع بدء التجربة بـ 3.6 كما طلبت
     const GEMINI_MODELS = [
         'gemini-3.6-flash',
         'gemini-2.5-flash',
@@ -264,23 +260,31 @@
 
     let generatedJsonData = null;
 
-    window.addEventListener('DOMContentLoaded', () => {
+    // Load API Key safely on load
+    function initApp() {
         const savedKey = localStorage.getItem('termo_gemini_key');
-        if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
-
-        const btn = document.getElementById('processBtn');
-        if (btn) {
-            btn.addEventListener('click', startProcess);
+        if (savedKey) {
+            const input = document.getElementById('apiKeyInput');
+            if (input) input.value = savedKey;
         }
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+        initApp();
+    }
 
     function saveApiKey() {
-        const val = document.getElementById('apiKeyInput').value.trim();
-        localStorage.setItem('termo_gemini_key', val);
+        const input = document.getElementById('apiKeyInput');
+        if (input) {
+            localStorage.setItem('termo_gemini_key', input.value.trim());
+        }
     }
 
     function logMessage(msg, isError = false) {
         const logBox = document.getElementById('logBox');
+        if (!logBox) return;
         logBox.style.display = 'block';
         const color = isError ? '#f87171' : '#38bdf8';
         const time = new Date().toLocaleTimeString('ar-EG');
@@ -289,14 +293,22 @@
     }
 
     function updateProgress(text, percent) {
-        document.getElementById('progressSection').style.display = 'block';
-        document.getElementById('progressText').innerText = text;
-        document.getElementById('progressPercent').innerText = `${percent}%`;
-        document.getElementById('progressBar').style.width = `${percent}%`;
+        const sec = document.getElementById('progressSection');
+        if (sec) sec.style.display = 'block';
+        
+        const txt = document.getElementById('progressText');
+        if (txt) txt.innerText = text;
+
+        const prc = document.getElementById('progressPercent');
+        if (prc) prc.innerText = `${percent}%`;
+
+        const bar = document.getElementById('progressBar');
+        if (bar) bar.style.width = `${percent}%`;
     }
 
     function showSelectedFiles(files) {
         const notice = document.getElementById('fileListNotice');
+        if (!notice) return;
         if (files && files.length > 0) {
             let names = Array.from(files).map(f => f.name).join(', ');
             notice.innerText = `📁 تم اختيار (${files.length}) ملف: ${names}`;
@@ -367,10 +379,12 @@
 
     async function startProcess() {
         const btn = document.getElementById('processBtn');
-        document.getElementById('downloadActionArea').style.display = 'none';
+        const downloadArea = document.getElementById('downloadActionArea');
+        if (downloadArea) downloadArea.style.display = 'none';
         
         try {
-            const apiKey = document.getElementById('apiKeyInput').value.trim();
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const apiKey = apiKeyInput ? apiKeyInput.value.trim() : '';
             if (!apiKey) {
                 alert("يرجى إدخال مفتاح Gemini API Key أولاً!");
                 return;
@@ -393,7 +407,6 @@
 
             const partsPayload = [];
 
-            // System prompt focused on Q&A extraction & concise high-yield info
             const systemPrompt = `You are a top-tier medical and academic professor specialized in summarizing complex lectures into concise, high-yield Question & Answer (Q&A) study guides.
 
 Analyze all attached materials (PDFs, images, handwritten notes, text) and generate a comprehensive yet extremely concise Q&A summary to save document pages.
@@ -474,7 +487,7 @@ Return ONLY a valid JSON object matching this exact schema without markdown wrap
             updateProgress("اكتملت العملية بنجاح! 100%", 100);
             logMessage("🎉 المستند جاهز للتحميل والمعاينة الآن!");
             
-            document.getElementById('downloadActionArea').style.display = 'block';
+            if (downloadArea) downloadArea.style.display = 'block';
 
         } catch (err) {
             logMessage(`❌ خطأ: ${err.message}`, true);
@@ -511,9 +524,5 @@ Return ONLY a valid JSON object matching this exact schema without markdown wrap
                         <strong>الإجابة:</strong> ${item.answer}
                         ${keywordsHtml}
                     </div>
-                </div>
-            `;
-            listContainer.innerHTML += cardHtml;
-        });
-
- 
+            </div>
+    
