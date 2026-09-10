@@ -6,9 +6,9 @@
     <title>Termo Luxury Slide Builder</title>
     
     <!-- PDF.js & PptxGenJS CDN -->
-    <script src="[https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js](https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js)"></script>
-    <script src="[https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js](https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js)"></script>
-    <link href="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css)" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     
     <style>
         body { 
@@ -33,6 +33,7 @@
             padding: 30px; 
             cursor: pointer; 
             transition: all 0.3s ease; 
+            display: block;
         }
         .drop-zone:hover { 
             background: rgba(72, 202, 228, 0.08); 
@@ -55,12 +56,12 @@
             border-radius: 12px; 
             font-family: 'Courier New', monospace; 
             font-size: 0.85rem; 
-            max-height: 160px; 
+            max-height: 180px; 
             overflow-y: auto; 
             padding: 12px; 
             color: #48cae4; 
             text-align: left; 
-            dir: ltr; 
+            direction: ltr; 
             border: 1px solid #1c2541;
         }
         .btn-luxury {
@@ -83,10 +84,10 @@
 <div class="container" style="max-width: 760px;">
     <div class="main-card text-center">
         <div class="mb-3">
-            <span class="badge bg-warning text-dark px-3 py-2 fw-bold rounded-pill"> Termo AI Engine 2.5 Pro</span>
+            <span class="badge bg-warning text-dark px-3 py-2 fw-bold rounded-pill">⚡ Termo AI Engine 2.5 Pro</span>
         </div>
-        <h2 class="fw-bold mb-2" style="color: #48cae4;">👑 Termo Luxury Presentation Generator</h2>
-        <p class="text-slate-400 small mb-4">صانع البوربوينت الأكاديمي الفخم | تحويل الصور والملفات والنصوص لملفات PPTX احترافية</p>
+        <h2 class="fw-bold mb-2" style="color: #48cae4;">👑 Termo Presentation Generator</h2>
+        <p class="text-slate-400 small mb-4">تحويل الصور، المستندات، والنصوص الأكاديمية إلى شرائح PowerPoint فخمة</p>
 
         <!-- API Key Input -->
         <div class="mb-3 text-start">
@@ -97,19 +98,21 @@
         <!-- Mode Selection -->
         <div class="btn-group w-100 mb-3" role="group">
             <input type="radio" class="btn-check" name="inputType" id="typeFile" checked onclick="toggleInputMode('file')">
-            <label class="btn btn-outline-info py-2" for="typeFile">📸 رفع صور أو ملفات PDF كبيرة</label>
+            <label class="btn btn-outline-info py-2" for="typeFile">📸 رفع صور أو ملفات PDF</label>
 
             <input type="radio" class="btn-check" name="inputType" id="typeText" onclick="toggleInputMode('text')">
             <label class="btn btn-outline-info py-2" for="typeText">✍️ نسخ / كتابة نص المحاضرة</label>
         </div>
 
-        <!-- File Upload Area -->
-        <div id="fileUploadContainer" class="drop-zone mb-3" onclick="document.getElementById('fileInput').click()">
-            <div style="font-size: 2.5rem;" class="mb-2">📚</div>
-            <h6 class="fw-bold text-white mb-1">ارفع صور المحاضرة أو ملفات الـ PDF</h6>
-            <p class="text-slate-400 small mb-0">يدعم الملفات الكبيرة وسيقوم بضغطها ومعالجتها تلقائياً</p>
+        <!-- File Upload Area (Label Linked Directly) -->
+        <div id="fileUploadContainer" class="mb-3">
+            <label for="fileInput" id="dropZone" class="drop-zone">
+                <div style="font-size: 2.5rem;" class="mb-2">📚</div>
+                <h6 class="fw-bold text-white mb-1">اضغط هنا لاختيار الصور أو ملفات الـ PDF</h6>
+                <p class="text-slate-400 small mb-0">أو اسحب الملفات وأسقطها داخل هذا المربع</p>
+                <div id="fileSelectedLabel" class="mt-2 text-start"></div>
+            </label>
             <input type="file" id="fileInput" accept="image/*,application/pdf" multiple style="display:none;" onchange="updateFileLabel(this.files)">
-            <div id="fileSelectedLabel" class="mt-2 text-warning fw-bold small"></div>
         </div>
 
         <!-- Text Input Area -->
@@ -140,11 +143,35 @@
 </div>
 
 <script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = '[https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js](https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js)';
+    // حل مشكلة CORS لتشغيل الـ PDF Worker بشكل مضمون داخل الذاكرة
+    async function initPdfWorker() {
+        try {
+            const response = await fetch('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js');
+            const workerCode = await response.text();
+            const blob = new Blob([workerCode], { type: 'text/javascript' });
+            pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
+        } catch (e) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    }
+    initPdfWorker();
 
     window.onload = () => {
         const savedKey = localStorage.getItem('termo_gemini_key');
         if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
+
+        // إعداد السحب والإفلات Drag and Drop
+        const dropZone = document.getElementById('dropZone');
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+            dropZone.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); }, false);
+        });
+        dropZone.addEventListener('drop', e => {
+            const dt = e.dataTransfer;
+            if (dt.files && dt.files.length > 0) {
+                document.getElementById('fileInput').files = dt.files;
+                updateFileLabel(dt.files);
+            }
+        });
     };
 
     function saveApiKey() {
@@ -157,9 +184,20 @@
     }
 
     function updateFileLabel(files) {
-        if (files && files.length > 0) {
-            document.getElementById('fileSelectedLabel').innerText = `تم اختيار ${files.length} ملف/ملفات جاهزة للمعالجة.`;
+        const labelBox = document.getElementById('fileSelectedLabel');
+        if (!files || files.length === 0) {
+            labelBox.innerHTML = '';
+            return;
         }
+        let html = `<div class="p-2 bg-dark rounded border border-info small text-white mt-2">`;
+        html += `<strong class="text-info d-block mb-1">📁 تم تحديد ${files.length} ملف/ملفات:</strong><ul class="mb-0 ps-3">`;
+        for (let i = 0; i < Math.min(files.length, 4); i++) {
+            const sizeMB = (files[i].size / (1024 * 1024)).toFixed(2);
+            html += `<li>${files[i].name} <span class="text-warning">(${sizeMB} MB)</span></li>`;
+        }
+        if (files.length > 4) html += `<li>...وغيرها (${files.length - 4} ملفات أخرى)</li>`;
+        html += `</ul></div>`;
+        labelBox.innerHTML = html;
     }
 
     function logMessage(msg) {
@@ -169,7 +207,6 @@
         logBox.scrollTop = logBox.scrollHeight;
     }
 
-    // ضغط الصور تلقائياً لتفادي تهنيج المتصفح والذاكرة
     function resizeAndCompressImage(imageElement, maxDimension = 1200, quality = 0.75) {
         const canvas = document.createElement('canvas');
         let width = imageElement.width;
@@ -196,7 +233,7 @@
 
     async function startBuildingPresentation() {
         const apiKey = document.getElementById('apiKeyInput').value.trim();
-        if (!apiKey) return alert("يرجى أدخال مفتاح Gemini API أولاً!");
+        if (!apiKey) return alert("يرجى إدخال مفتاح Gemini API أولاً!");
 
         const isTextMode = document.getElementById('typeText').checked;
         let lectureContent = "";
@@ -207,7 +244,7 @@
         try {
             if (isTextMode) {
                 lectureContent = document.getElementById('rawTextInput').value.trim();
-                if (!lectureContent) return alert("يرجى أدخال النص أولاً!");
+                if (!lectureContent) return alert("يرجى إدخال النص أولاً!");
             } else {
                 const files = document.getElementById('fileInput').files;
                 if (!files || files.length === 0) return alert("يرجى اختيار صور أو ملفات PDF أولاً!");
@@ -285,7 +322,7 @@
     }
 
     async function callGeminiOCR(apiKey, base64Image) {
-        const url = `[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$){apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
         const promptText = `Extract all text cleanly from this lecture page. Preserve Arabic & English technical terminology accurately. Plain text only.`;
 
         const requestBody = {
@@ -302,7 +339,7 @@
     }
 
     async function generateSlideStructure(apiKey, text) {
-        const url = `[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$){apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
         const promptText = `You are a world-class professor and senior presentation designer.
 Transform the following lecture content into an organized, high-impact slide deck structure.
 
@@ -338,7 +375,6 @@ ${text.substring(0, 12000)}`;
         const data = await res.json();
         let rawJsonStr = data.candidates[0].content.parts[0].text;
 
-        // Clean json output
         rawJsonStr = rawJsonStr.replace(/```json/g, "").replace(/```/g, "").trim();
         return JSON.parse(rawJsonStr);
     }
@@ -347,21 +383,17 @@ ${text.substring(0, 12000)}`;
         let pptx = new PptxGenJS();
         pptx.layout = 'LAYOUT_16x9';
 
-        // الألوان الفخمة
-        const COLOR_BG = '0B132B';       // Deep Royal Blue/Black
-        const COLOR_CARD = '1C2541';     // Rich Navy Card
-        const COLOR_CYAN = '48CAE4';     // Cyber Cyan Accent
-        const COLOR_GOLD = 'FFD166';     // Academic Gold
-        const COLOR_TEXT = 'F8FAFC';     // Bright White
-        const COLOR_MUTED = '94A3B8';    // Slate Gray
+        const COLOR_BG = '0B132B';
+        const COLOR_CARD = '1C2541';
+        const COLOR_CYAN = '48CAE4';
+        const COLOR_GOLD = 'FFD166';
+        const COLOR_TEXT = 'F8FAFC';
+        const COLOR_MUTED = '94A3B8';
 
         slidesData.forEach((slideInfo, idx) => {
             let slide = pptx.addSlide();
-            
-            // خلفية داكنة فخمة لكل السلايدات
             slide.background = { color: COLOR_BG };
 
-            // الهيدر والفوتر الثابت للبصمة (Termo Edition)
             slide.addText('⚡ Termo Academic Deck', {
                 x: 0.6, y: 7.0, w: 4.0, h: 0.3,
                 fontFace: 'Arial', fontSize: 10, bold: true,
@@ -375,7 +407,6 @@ ${text.substring(0, 12000)}`;
             });
 
             if (slideInfo.type === 'cover' || idx === 0) {
-                // سلايد الغلاف الرئيسي (Cover Slide)
                 slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
                     x: 0.8, y: 1.2, w: 11.73, h: 5.0,
                     fill: { color: COLOR_CARD },
@@ -403,7 +434,6 @@ ${text.substring(0, 12000)}`;
                 });
 
             } else {
-                // سلايد المحتوى المتناسق (Content Slide)
                 slide.addText(slideInfo.title || `المحور ${idx}`, {
                     x: 0.8, y: 0.4, w: 11.73, h: 0.8,
                     fontFace: 'Arial', fontSize: 26, bold: true,
@@ -440,30 +470,10 @@ ${text.substring(0, 12000)}`;
                         posY = 1.8 + (row * 2.5);
                     }
 
-                    // كارت العرض لكل نقطة
                     slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
                         x: posX, y: posY, w: cardW, h: cardH,
                         fill: { color: COLOR_CARD },
                         line: { color: pIdx === 0 ? COLOR_GOLD : '334155', width: 1.5 }
                     });
 
-                    // عنوان النقطة
-                    slide.addText(pt.header || '', {
-                        x: posX + 0.2, y: posY + 0.2, w: cardW - 0.4, h: 0.5,
-                        fontFace: 'Arial', fontSize: 17, bold: true,
-                        color: COLOR_TEXT, align: 'right', isRtl: true
-                    });
-
-                    // شرح النقطة
-                    if (pt.desc) {
-                        slide.addText(pt.desc, {
-                            x: posX + 0.2, y: posY + 0.75, w: cardW - 0.4, h: cardH - 0.85,
-                            fontFace: 'Arial', fontSize: 13,
-                            color: COLOR_MUTED, align: 'right', isRtl: true
-                        });
-                    }
-                });
-            }
-        });
-
-        // تنزيل
+                    slide.addText(pt.h
