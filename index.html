@@ -3,62 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Termo AI Slide Builder Pro</title>
+    <title>Termo Luxury Slide Builder</title>
     
-    <!-- PDF.js & PptxGenJS Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <!-- PDF.js & PptxGenJS CDN -->
+    <script src="[https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js](https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js)"></script>
+    <script src="[https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js](https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js)"></script>
+    <link href="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css)" rel="stylesheet">
     
     <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; padding: 25px 0; }
-        .main-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); padding: 35px; }
-        .drop-zone { border: 2px dashed #38bdf8; border-radius: 16px; background: rgba(56, 189, 248, 0.03); padding: 30px; cursor: pointer; transition: 0.3s; }
-        .drop-zone:hover { background: rgba(56, 189, 248, 0.08); }
-        .form-control, .form-select { background-color: #0f172a; border-color: #334155; color: #f8fafc; }
-        .form-control:focus { background-color: #0f172a; color: #fff; border-color: #38bdf8; box-shadow: none; }
-        .log-box { background: #090d16; border-radius: 10px; font-family: monospace; font-size: 0.85rem; max-height: 150px; overflow-y: auto; padding: 12px; color: #38bdf8; text-align: left; dir: ltr; }
+        body { 
+            background: radial-gradient(circle at top, #1c2541, #0b132b); 
+            color: #f8fafc; 
+            font-family: system-ui, -apple-system, sans-serif; 
+            min-height: 100vh; 
+            padding: 25px 0; 
+        }
+        .main-card { 
+            background: rgba(28, 37, 65, 0.85); 
+            border: 1px solid rgba(72, 202, 228, 0.2); 
+            border-radius: 24px; 
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); 
+            backdrop-filter: blur(12px);
+            padding: 35px; 
+        }
+        .drop-zone { 
+            border: 2px dashed #48cae4; 
+            border-radius: 16px; 
+            background: rgba(72, 202, 228, 0.03); 
+            padding: 30px; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+        }
+        .drop-zone:hover { 
+            background: rgba(72, 202, 228, 0.08); 
+            border-color: #ffd166;
+        }
+        .form-control, .form-select { 
+            background-color: #0b132b; 
+            border-color: #1c2541; 
+            color: #f8fafc; 
+            border-radius: 10px;
+        }
+        .form-control:focus { 
+            background-color: #0b132b; 
+            color: #fff; 
+            border-color: #48cae4; 
+            box-shadow: 0 0 10px rgba(72, 202, 228, 0.3); 
+        }
+        .log-box { 
+            background: #050a18; 
+            border-radius: 12px; 
+            font-family: 'Courier New', monospace; 
+            font-size: 0.85rem; 
+            max-height: 160px; 
+            overflow-y: auto; 
+            padding: 12px; 
+            color: #48cae4; 
+            text-align: left; 
+            dir: ltr; 
+            border: 1px solid #1c2541;
+        }
+        .btn-luxury {
+            background: linear-gradient(135deg, #48cae4, #0077b6);
+            color: #fff;
+            border: none;
+            font-weight: bold;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        .btn-luxury:hover {
+            background: linear-gradient(135deg, #0077b6, #48cae4);
+            box-shadow: 0 0 15px rgba(72, 202, 228, 0.4);
+            color: #fff;
+        }
     </style>
 </head>
 <body>
 
-<div class="container" style="max-width: 720px;">
+<div class="container" style="max-width: 760px;">
     <div class="main-card text-center">
-        <h2 class="fw-bold mb-2" style="color: #38bdf8;">📊 Termo AI Presentation Generator</h2>
-        <p class="text-slate-400 small mb-4">صانع السلايدات الذكي | تحويل الصور والملفات والنصوص لملف PowerPoint إبداعي</p>
+        <div class="mb-3">
+            <span class="badge bg-warning text-dark px-3 py-2 fw-bold rounded-pill"> Termo AI Engine 2.5 Pro</span>
+        </div>
+        <h2 class="fw-bold mb-2" style="color: #48cae4;">👑 Termo Luxury Presentation Generator</h2>
+        <p class="text-slate-400 small mb-4">صانع البوربوينت الأكاديمي الفخم | تحويل الصور والملفات والنصوص لملفات PPTX احترافية</p>
 
-        <!-- API Key Box -->
+        <!-- API Key Input -->
         <div class="mb-3 text-start">
             <label class="form-label text-slate-300 small fw-bold">Gemini API Key:</label>
             <input type="password" id="apiKeyInput" class="form-control form-control-sm" placeholder="AIzaSy..." onchange="saveApiKey()">
         </div>
 
-        <!-- Input Type Switcher -->
+        <!-- Mode Selection -->
         <div class="btn-group w-100 mb-3" role="group">
             <input type="radio" class="btn-check" name="inputType" id="typeFile" checked onclick="toggleInputMode('file')">
-            <label class="btn btn-outline-info" for="typeFile">📄 رفع صور / ملفات PDF</label>
+            <label class="btn btn-outline-info py-2" for="typeFile">📸 رفع صور أو ملفات PDF كبيرة</label>
 
             <input type="radio" class="btn-check" name="inputType" id="typeText" onclick="toggleInputMode('text')">
-            <label class="btn btn-outline-info" for="typeText">✍️ كتابة / نسخ نص مباشر</label>
+            <label class="btn btn-outline-info py-2" for="typeText">✍️ نسخ / كتابة نص المحاضرة</label>
         </div>
 
-        <!-- File Upload Zone -->
+        <!-- File Upload Area -->
         <div id="fileUploadContainer" class="drop-zone mb-3" onclick="document.getElementById('fileInput').click()">
-            <div style="font-size: 2.2rem;" class="mb-1">📸</div>
-            <h6 class="fw-bold text-white mb-1">ارفع صور المحاضرة أو ملف الـ PDF</h6>
-            <p class="text-slate-400 small mb-0">سيتم قراءة النص وتصميمه في سلايدات تلقائياً</p>
-            <input type="file" id="fileInput" accept="image/*,application/pdf" multiple style="display:none;">
+            <div style="font-size: 2.5rem;" class="mb-2">📚</div>
+            <h6 class="fw-bold text-white mb-1">ارفع صور المحاضرة أو ملفات الـ PDF</h6>
+            <p class="text-slate-400 small mb-0">يدعم الملفات الكبيرة وسيقوم بضغطها ومعالجتها تلقائياً</p>
+            <input type="file" id="fileInput" accept="image/*,application/pdf" multiple style="display:none;" onchange="updateFileLabel(this.files)">
+            <div id="fileSelectedLabel" class="mt-2 text-warning fw-bold small"></div>
         </div>
 
-        <!-- Text Area Box -->
+        <!-- Text Input Area -->
         <div id="textInputContainer" class="mb-3 text-start" style="display:none;">
             <label class="form-label text-slate-300 small fw-bold">نص المحاضرة:</label>
-            <textarea id="rawTextInput" class="form-control" rows="6" placeholder="انسخ نص المحاضرة هنا..."></textarea>
+            <textarea id="rawTextInput" class="form-control" rows="7" placeholder="ضع نص المحاضرة هنا بالكامل..."></textarea>
         </div>
 
-        <!-- Process Button -->
-        <button id="processBtn" class="btn btn-primary w-100 py-2 fw-bold mb-3" style="background: linear-gradient(90deg, #0ea5e9, #6366f1); border:none;" onclick="startBuildingPresentation()">
-            🚀 إنتاج عرض PowerPoint الجذاب الآن
+        <!-- Action Button -->
+        <button id="processBtn" class="btn btn-luxury w-100 py-3 mb-3 fs-6" onclick="startBuildingPresentation()">
+            👑 إنتاج ملف البوربوينت الفخم وتحميله الآن
         </button>
 
         <!-- Progress Indicator -->
@@ -67,18 +129,18 @@
                 <span id="progressText">جاري المعالجة...</span>
                 <span id="progressPercent">0%</span>
             </div>
-            <div class="progress" style="height: 8px;">
+            <div class="progress" style="height: 10px; border-radius: 5px; background-color: #0b132b;">
                 <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: 0%"></div>
             </div>
         </div>
 
-        <!-- Live Status Logs -->
-        <div id="logBox" class="log-box mb-3" style="display:none;"></div>
+        <!-- System Logs -->
+        <div id="logBox" class="log-box mb-2" style="display:none;"></div>
     </div>
 </div>
 
 <script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '[https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js](https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js)';
 
     window.onload = () => {
         const savedKey = localStorage.getItem('termo_gemini_key');
@@ -94,6 +156,12 @@
         document.getElementById('textInputContainer').style.display = mode === 'text' ? 'block' : 'none';
     }
 
+    function updateFileLabel(files) {
+        if (files && files.length > 0) {
+            document.getElementById('fileSelectedLabel').innerText = `تم اختيار ${files.length} ملف/ملفات جاهزة للمعالجة.`;
+        }
+    }
+
     function logMessage(msg) {
         const logBox = document.getElementById('logBox');
         logBox.style.display = 'block';
@@ -101,9 +169,34 @@
         logBox.scrollTop = logBox.scrollHeight;
     }
 
+    // ضغط الصور تلقائياً لتفادي تهنيج المتصفح والذاكرة
+    function resizeAndCompressImage(imageElement, maxDimension = 1200, quality = 0.75) {
+        const canvas = document.createElement('canvas');
+        let width = imageElement.width;
+        let height = imageElement.height;
+
+        if (width > height) {
+            if (width > maxDimension) {
+                height = Math.round((height * maxDimension) / width);
+                width = maxDimension;
+            }
+        } else {
+            if (height > maxDimension) {
+                width = Math.round((width * maxDimension) / height);
+                height = maxDimension;
+            }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(imageElement, 0, 0, width, height);
+        return canvas.toDataURL('image/jpeg', quality).split(',')[1];
+    }
+
     async function startBuildingPresentation() {
         const apiKey = document.getElementById('apiKeyInput').value.trim();
-        if (!apiKey) return alert("يرجى إدخال مفتاح Gemini API أولاً!");
+        if (!apiKey) return alert("يرجى أدخال مفتاح Gemini API أولاً!");
 
         const isTextMode = document.getElementById('typeText').checked;
         let lectureContent = "";
@@ -117,30 +210,30 @@
                 if (!lectureContent) return alert("يرجى أدخال النص أولاً!");
             } else {
                 const files = document.getElementById('fileInput').files;
-                if (!files || files.length === 0) return alert("يرجى اختيار صور أو ملف PDF أولاً!");
-                lectureContent = await extractTextFromFiles(apiKey, files);
+                if (!files || files.length === 0) return alert("يرجى اختيار صور أو ملفات PDF أولاً!");
+                lectureContent = await processAndExtractFiles(apiKey, files);
             }
 
-            logMessage("تحليل المحاضرة وصياغة هيكل السلايدات بواسطة AI...");
-            updateProgress("جاري هندسة السلايدات وإعداد التصميم...", 60);
+            logMessage("جاري تحليل النص وهندسة السلايدات بواسطة AI...");
+            updateProgress("صياغة العروض والهيكل الأكاديمي...", 70);
 
             const slidesJSON = await generateSlideStructure(apiKey, lectureContent);
-            logMessage(`تم بناء ${slidesJSON.length} سلايد بنجاح!`);
+            logMessage(`تم بناء هيكل لـ (${slidesJSON.length}) سلايد بنجاح!`);
 
-            updateProgress("جاري إنشاء ملف الـ PowerPoint...", 85);
-            await buildPowerPointFile(slidesJSON);
+            updateProgress("جاري بناء وتصميم ملف PowerPoint الفخم...", 90);
+            await buildLuxuriousPowerPoint(slidesJSON);
 
-            updateProgress("اكتمل العمل بنجاح!", 100);
-            logMessage("تم تنزيل ملف الـ PPTX بلمسات Termo الخاصة!");
+            updateProgress("اكتمل العمل والتحميل بنجاح!", 100);
+            logMessage("✨ تم إنشاء وتنزيل الملف بتنسيقات Termo الفخمة!");
 
         } catch (err) {
             logMessage(`❌ خطأ: ${err.message}`);
-            alert(`حدث خطأ: ${err.message}`);
+            alert(`حدث خطأ أثناء العمل: ${err.message}`);
         }
     }
 
-    async function extractTextFromFiles(apiKey, files) {
-        let fullText = "";
+    async function processAndExtractFiles(apiKey, files) {
+        let extractedTextCombined = "";
         let pageQueue = [];
 
         for (let file of files) {
@@ -153,68 +246,88 @@
             }
         }
 
-        const total = pageQueue.length;
-        for (let idx = 0; idx < total; idx++) {
-            updateProgress(`قراءة واستخراج الصور صفحة (${idx + 1} من ${total})...`, Math.round((idx / total) * 50));
+        const totalPages = pageQueue.length;
+        logMessage(`إجمالي عدد الصفحات للضغط والقراءة: ${totalPages}`);
+
+        for (let idx = 0; idx < totalPages; idx++) {
+            updateProgress(`معالجة وضغط الصفحة (${idx + 1} من ${totalPages})...`, Math.round((idx / totalPages) * 60));
             const item = pageQueue[idx];
-            let canvas;
+            let base64Data = "";
 
             if (item.type === 'pdf_page') {
                 const page = await item.pdf.getPage(item.pageNum);
-                const viewport = page.getViewport({ scale: 1.5 });
-                canvas = document.createElement('canvas');
+                const viewport = page.getViewport({ scale: 1.2 });
+                const canvas = document.createElement('canvas');
                 canvas.width = viewport.width; canvas.height = viewport.height;
                 await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+                base64Data = canvas.toDataURL('image/jpeg', 0.75).split(',')[1];
             } else {
-                canvas = await imageToCanvas(item.file);
+                base64Data = await processImageFileToBase64(item.file);
             }
 
-            const base64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
-            logMessage(`استخراج النص من الصفحة ${idx + 1}...`);
-            const pageText = await callGeminiOCR(apiKey, base64);
-            fullText += pageText + "\n\n";
+            logMessage(`استخراج النص الذكي للصفحة ${idx + 1}...`);
+            const pageText = await callGeminiOCR(apiKey, base64Data);
+            extractedTextCombined += `\n--- Page ${idx + 1} ---\n` + pageText;
         }
-        return fullText;
+
+        return extractedTextCombined;
+    }
+
+    function processImageFileToBase64(file) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const compressedBase64 = resizeAndCompressImage(img, 1200, 0.75);
+                resolve(compressedBase64);
+            };
+            img.src = URL.createObjectURL(file);
+        });
     }
 
     async function callGeminiOCR(apiKey, base64Image) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-        const promptText = `Extract all text cleanly from this image page. Preserve reading order (Arabic or English). Plain text only.`;
+        const url = `[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$){apiKey}`;
+        const promptText = `Extract all text cleanly from this lecture page. Preserve Arabic & English technical terminology accurately. Plain text only.`;
 
         const requestBody = {
             contents: [{ parts: [{ text: promptText }, { inline_data: { mime_type: "image/jpeg", data: base64Image } }] }]
         };
 
-        const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
-        const data = await res.json();
-        return data.candidates[0].content.parts[0].text;
+        try {
+            const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
+            const data = await res.json();
+            return data.candidates[0].content.parts[0].text;
+        } catch (e) {
+            return "";
+        }
     }
 
-    async function generateSlideStructure(apiKey, rawText) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-        const promptText = `You are a top-tier professor and presentation designer.
-Analyze the following lecture content and transform it into a structured, highly engaging slide deck.
+    async function generateSlideStructure(apiKey, text) {
+        const url = `[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$){apiKey}`;
+        const promptText = `You are a world-class professor and senior presentation designer.
+Transform the following lecture content into an organized, high-impact slide deck structure.
 
-Return STRICTLY a JSON array of slide objects matching this format:
+Return STRICTLY valid JSON array of slide objects. No markdown markers (like \`\`\`json), no pre-text or post-text.
+Format Schema:
 [
   {
-    "title": "Main Title Of Lecture",
-    "subtitle": "Subtitle or Key Theme",
-    "type": "title_slide"
+    "title": "Slide Title",
+    "subtitle": "Subtitle or Context",
+    "type": "cover", 
+    "points": []
   },
   {
-    "title": "Slide Concept Title",
-    "subtitle": "Short Key Takeaway",
-    "type": "content_slide",
+    "title": "Concept or Topic Title",
+    "subtitle": "Brief Category or Takeaway",
+    "type": "content",
     "points": [
-      {"header": "Core Point 1", "desc": "Detailed explanation or breakdown of point 1."},
-      {"header": "Core Point 2", "desc": "Detailed explanation or breakdown of point 2."}
+      {"header": "Key Point 1", "desc": "Detailed clear explanation in bullet form."},
+      {"header": "Key Point 2", "desc": "Detailed clear explanation in bullet form."}
     ]
   }
 ]
 
-Lecture Raw Content:
-${rawText.substring(0, 10000)}`;
+Lecture Content:
+${text.substring(0, 12000)}`;
 
         const requestBody = {
             contents: [{ parts: [{ text: promptText }] }],
@@ -223,110 +336,128 @@ ${rawText.substring(0, 10000)}`;
 
         const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
         const data = await res.json();
-        return JSON.parse(data.candidates[0].content.parts[0].text);
+        let rawJsonStr = data.candidates[0].content.parts[0].text;
+
+        // Clean json output
+        rawJsonStr = rawJsonStr.replace(/```json/g, "").replace(/```/g, "").trim();
+        return JSON.parse(rawJsonStr);
     }
 
-    async function buildPowerPointFile(slidesData) {
+    async function buildLuxuriousPowerPoint(slidesData) {
         let pptx = new PptxGenJS();
         pptx.layout = 'LAYOUT_16x9';
 
-        // الألوان الأكاديمية الراقية
-        const COLOR_BG = '0F172A';        # Dark Slate Navy
-        const COLOR_CARD = '1E293B';      # Elevated Slate Card
-        const COLOR_ACCENT = '0EA5E9';    # Electric Cyan
-        const COLOR_TEXT = 'F8FAFC';      # White
-        const COLOR_MUTED = '94A3B8';     # Muted Gray
+        // الألوان الفخمة
+        const COLOR_BG = '0B132B';       // Deep Royal Blue/Black
+        const COLOR_CARD = '1C2541';     // Rich Navy Card
+        const COLOR_CYAN = '48CAE4';     // Cyber Cyan Accent
+        const COLOR_GOLD = 'FFD166';     // Academic Gold
+        const COLOR_TEXT = 'F8FAFC';     // Bright White
+        const COLOR_MUTED = '94A3B8';    // Slate Gray
 
         slidesData.forEach((slideInfo, idx) => {
             let slide = pptx.addSlide();
             
-            // 1. خلفية داكنة فخمة
+            // خلفية داكنة فخمة لكل السلايدات
             slide.background = { color: COLOR_BG };
 
-            // 2. توقيع وصنع Termo ثابت في كل السلايدات
-            slide.addText('⚡ Created by Termo', {
-                x: 9.5, y: 7.0, w: 3.5, h: 0.3,
-                fontFace: 'Arial', fontSize: 11, bold: true,
-                color: COLOR_ACCENT, align: 'right'
+            // الهيدر والفوتر الثابت للبصمة (Termo Edition)
+            slide.addText('⚡ Termo Academic Deck', {
+                x: 0.6, y: 7.0, w: 4.0, h: 0.3,
+                fontFace: 'Arial', fontSize: 10, bold: true,
+                color: COLOR_CYAN, align: 'left'
             });
 
-            if (slideInfo.type === 'title_slide' || idx === 0) {
-                // تصميم سلايد العنوان الرئيسي
+            slide.addText(`Slide ${idx + 1}`, {
+                x: 11.5, y: 7.0, w: 1.2, h: 0.3,
+                fontFace: 'Arial', fontSize: 10,
+                color: COLOR_MUTED, align: 'right'
+            });
+
+            if (slideInfo.type === 'cover' || idx === 0) {
+                // سلايد الغلاف الرئيسي (Cover Slide)
                 slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
-                    x: 1.0, y: 1.5, w: 11.33, h: 4.5,
+                    x: 0.8, y: 1.2, w: 11.73, h: 5.0,
                     fill: { color: COLOR_CARD },
-                    line: { color: COLOR_ACCENT, width: 2 }
+                    line: { color: COLOR_GOLD, width: 2 }
                 });
 
-                slide.addText(slideInfo.title || 'محاضرة شاملة', {
-                    x: 1.5, y: 2.2, w: 10.33, h: 1.5,
+                slide.addText(slideInfo.title || 'محاضرة أكاديمية شاملة', {
+                    x: 1.2, y: 2.0, w: 10.93, h: 1.6,
                     fontFace: 'Arial', fontSize: 36, bold: true,
-                    color: COLOR_TEXT, align: 'center', isRtl: true
+                    color: COLOR_GOLD, align: 'center', isRtl: true
                 });
 
                 if (slideInfo.subtitle) {
                     slide.addText(slideInfo.subtitle, {
-                        x: 1.5, y: 3.8, w: 10.33, h: 1.0,
+                        x: 1.2, y: 3.7, w: 10.93, h: 0.8,
                         fontFace: 'Arial', fontSize: 20,
-                        color: COLOR_ACCENT, align: 'center', isRtl: true
+                        color: COLOR_CYAN, align: 'center', isRtl: true
                     });
                 }
+
+                slide.addText('Presented by: Termo AI Engine', {
+                    x: 1.2, y: 5.0, w: 10.93, h: 0.5,
+                    fontFace: 'Arial', fontSize: 14, italic: true,
+                    color: COLOR_MUTED, align: 'center'
+                });
+
             } else {
-                // تصميم سلايد المحتوى المتناسق
-                slide.addText(slideInfo.title || `العنصر ${idx}`, {
-                    x: 0.8, y: 0.5, w: 11.7, h: 0.8,
+                // سلايد المحتوى المتناسق (Content Slide)
+                slide.addText(slideInfo.title || `المحور ${idx}`, {
+                    x: 0.8, y: 0.4, w: 11.73, h: 0.8,
                     fontFace: 'Arial', fontSize: 26, bold: true,
-                    color: COLOR_ACCENT, align: 'right', isRtl: true
+                    color: COLOR_CYAN, align: 'right', isRtl: true
                 });
 
                 if (slideInfo.subtitle) {
                     slide.addText(slideInfo.subtitle, {
-                        x: 0.8, y: 1.2, w: 11.7, h: 0.5,
+                        x: 0.8, y: 1.1, w: 11.73, h: 0.4,
                         fontFace: 'Arial', fontSize: 14,
-                        color: COLOR_MUTED, align: 'right', isRtl: true
+                        color: COLOR_GOLD, align: 'right', isRtl: true
                     });
                 }
 
-                // رسم الكروت المنظمة
                 const points = slideInfo.points || [];
                 const count = Math.min(points.length, 4);
 
                 points.slice(0, 4).forEach((pt, pIdx) => {
                     let posX = 0.8;
-                    let posY = 2.0;
-                    let cardW = 11.7;
-                    let cardH = 1.0;
+                    let posY = 1.8;
+                    let cardW = 11.73;
+                    let cardH = 1.1;
 
                     if (count === 2) {
                         cardW = 5.6;
-                        cardH = 4.5;
-                        posX = 0.8 + (pIdx * 6.0);
+                        cardH = 4.8;
+                        posX = 0.8 + (pIdx * 6.13);
                     } else if (count >= 3) {
                         cardW = 5.6;
-                        cardH = 2.1;
+                        cardH = 2.2;
                         const row = Math.floor(pIdx / 2);
                         const col = pIdx % 2;
-                        posX = 0.8 + (col * 6.0);
-                        posY = 2.0 + (row * 2.3);
+                        posX = 0.8 + (col * 6.13);
+                        posY = 1.8 + (row * 2.5);
                     }
 
-                    // خلفية الكارت
+                    // كارت العرض لكل نقطة
                     slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
                         x: posX, y: posY, w: cardW, h: cardH,
                         fill: { color: COLOR_CARD },
-                        line: { color: '334155', width: 1 }
+                        line: { color: pIdx === 0 ? COLOR_GOLD : '334155', width: 1.5 }
                     });
 
-                    // نص الكارت
+                    // عنوان النقطة
                     slide.addText(pt.header || '', {
                         x: posX + 0.2, y: posY + 0.2, w: cardW - 0.4, h: 0.5,
-                        fontFace: 'Arial', fontSize: 18, bold: true,
+                        fontFace: 'Arial', fontSize: 17, bold: true,
                         color: COLOR_TEXT, align: 'right', isRtl: true
                     });
 
+                    // شرح النقطة
                     if (pt.desc) {
                         slide.addText(pt.desc, {
-                            x: posX + 0.2, y: posY + 0.7, w: cardW - 0.4, h: cardH - 0.8,
+                            x: posX + 0.2, y: posY + 0.75, w: cardW - 0.4, h: cardH - 0.85,
                             fontFace: 'Arial', fontSize: 13,
                             color: COLOR_MUTED, align: 'right', isRtl: true
                         });
@@ -335,27 +466,4 @@ ${rawText.substring(0, 10000)}`;
             }
         });
 
-        await pptx.writeFile({ fileName: `Termo_Lecture_${Date.now()}.pptx` });
-    }
-
-    function imageToCanvas(file) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width; canvas.height = img.height;
-                canvas.getContext('2d').drawImage(img, 0, 0);
-                resolve(canvas);
-            };
-            img.src = URL.createObjectURL(file);
-        });
-    }
-
-    function updateProgress(text, percent) {
-        document.getElementById('progressText').innerText = text;
-        document.getElementById('progressPercent').innerText = `${percent}%`;
-        document.getElementById('progressBar').style.width = `${percent}%`;
-    }
-</script>
-</body>
-</html>
+        // تنزيل
