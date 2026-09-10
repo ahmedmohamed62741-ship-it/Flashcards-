@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Termo Presentation Builder Pro</title>
+    <title>Termo Presentation Builder Pro 3.6</title>
     
     <!-- PDF.js & PptxGenJS CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -73,9 +73,9 @@
             color: #fff;
         }
         .btn-luxury:disabled {
-            background: #334155;
-            color: #94a3b8;
-            box-shadow: none;
+            background: #334155 !important;
+            color: #94a3b8 !important;
+            box-shadow: none !important;
             cursor: not-allowed;
         }
     </style>
@@ -134,12 +134,17 @@
 </div>
 
 <script>
-    // ضبط مكتبة قراءة PDF
-    if (window.pdfjsLib) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    }
+    // كاشف الأخطاء الشامل لإظهار أي مشكلة فور حدوثها
+    window.onerror = function(msg, url, line) {
+        alert("حدث خطأ في النظام: " + msg + " (سطر: " + line + ")");
+        const logBox = document.getElementById('logBox');
+        if (logBox) {
+            logBox.style.display = 'block';
+            logBox.innerHTML += `<span style="color: #f87171">> Error: ${msg} [Line ${line}]</span><br>`;
+        }
+        return false;
+    };
 
-    // قائمة النماذج المتاحة للذكاء الاصطناعي مع التبديل التلقائي
     const GEMINI_MODELS = [
         'gemini-3.6-flash',
         'gemini-2.5-flash',
@@ -180,7 +185,6 @@
         }
     }
 
-    // ضغط الصور لمنع الـ Memory Overflow
     function compressImageFile(file, maxDimension = 1200, quality = 0.75) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -226,7 +230,6 @@
         });
     }
 
-    // محرك طلبات Gemini مع التبديل التلقائي عند توقف أي نموذج
     async function callGeminiApiWithFallback(apiKey, partsPayload, isJson = false) {
         let lastError = null;
 
@@ -253,7 +256,7 @@
                     const errMsg = errData.error?.message || res.statusText;
                     
                     if (res.status === 404 || errMsg.includes('no longer available') || errMsg.includes('not found')) {
-                        logMessage(`⚠️ النموذج ${model} غير متاح، جاري تجربة النموذج التالي...`);
+                        logMessage(`⚠️ النموذج ${model} غير متاح، جاري التبديل للنموذج التالي...`);
                         lastError = new Error(errMsg);
                         continue;
                     } else {
@@ -270,8 +273,13 @@
     }
 
     async function processPdfFile(file, apiKey) {
-        if (!window.pdfjsLib) throw new Error("مكتبة قراءة الـ PDF لم تكتمل في التحميل، تحقق من الإنترنت.");
+        if (!window.pdfjsLib) {
+            throw new Error("لم يتم تحميل مكتبة PDF.js، يرجى التأكد من الاتصال بالإنترنت.");
+        }
+        
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         logMessage(`جاري فتح وتحليل ملف الـ PDF: (${file.name})...`);
+        
         const arrayBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
         let pdfCombinedText = "";
@@ -285,7 +293,7 @@
             if (extractedStr.trim().length > 40) {
                 pdfCombinedText += `\n[PDF Page ${i}]:\n` + extractedStr;
             } else {
-                logMessage(`الصفحة ${i} مصورة/سكانر، جاري استخراج النص منها بـ AI OCR...`);
+                logMessage(`الصفحة ${i} مصورة، جاري تحويلها بنظام AI OCR...`);
                 const viewport = page.getViewport({ scale: 1.2 });
                 const canvas = document.createElement('canvas');
                 canvas.width = viewport.width;
@@ -306,25 +314,25 @@
 
     async function startProcess() {
         const btn = document.getElementById('processBtn');
-        const apiKey = document.getElementById('apiKeyInput').value.trim();
         
-        if (!apiKey) return alert("يرجى إدخال مفتاح Gemini API Key أولاً!");
-
-        const pastedText = document.getElementById('rawTextInput').value.trim();
-        const files = document.getElementById('fileInput').files;
-
-        if (!pastedText && (!files || files.length === 0)) {
-            return alert("يرجى وضع نص أو اختيار صور/ملفات للبدء!");
-        }
-
-        // تعطيل الزر وتحديث الحالة بأسلوب بصري واضح
-        btn.disabled = true;
-        btn.innerText = "⏳ جاري المعالجة والتحليل...";
-        document.getElementById('logBox').innerHTML = '';
-        
-        let fullCombinedText = pastedText ? `[النص المباشر]:\n${pastedText}\n\n` : '';
-
         try {
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+            if (!apiKey) return alert("يرجى إدخال مفتاح Gemini API Key أولاً!");
+
+            const pastedText = document.getElementById('rawTextInput').value.trim();
+            const files = document.getElementById('fileInput').files;
+
+            if (!pastedText && (!files || files.length === 0)) {
+                return alert("يرجى وضع نص أو اختيار صور/ملفات للبدء!");
+            }
+
+            // الاستجابة الفورية وتحديث حالة الزر
+            btn.disabled = true;
+            btn.innerText = "⏳ جاري المعالجة والتحليل...";
+            document.getElementById('logBox').innerHTML = '';
+            
+            let fullCombinedText = pastedText ? `[النص المباشر]:\n${pastedText}\n\n` : '';
+
             if (files && files.length > 0) {
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
@@ -353,7 +361,7 @@
             }
 
             if (!fullCombinedText.trim()) {
-                throw new Error("لم يتم العثور على أي نص معالج للبدء في إنتاج السلايدات.");
+                throw new Error("لم يتم استخراج أي نص معالج للبدء.");
             }
 
             logMessage("جاري صياغة الشرائح والهيكل الأكاديمي بواسطة AI...");
@@ -366,13 +374,12 @@
             await createPptxFile(slideData);
 
             updateProgress("اكتملت العملية بنجاح!", 100);
-            logMessage("🎉 تم تنزيل ملف PowerPoint الفخم بنجاح إلى جهازك!");
+            logMessage("🎉 تم تنزيل ملف PowerPoint بنجاح إلى جهازك!");
 
         } catch (err) {
             logMessage(`❌ خطأ: ${err.message}`, true);
-            alert(`حدث خطأ أثناء العمل: ${err.message}`);
+            alert(`حدث خطأ أثناء التنفيذ: ${err.message}`);
         } finally {
-            // إعادة تفعيل الزر دائماً بعد الانتهاء
             btn.disabled = false;
             btn.innerText = "🚀 إنتاج وتنزيل ملف البوربوينت الفخم (PPTX)";
         }
@@ -413,7 +420,9 @@ ${fullText.substring(0, 16000)}`;
     }
 
     async function createPptxFile(slides) {
-        if (!window.PptxGenJS) throw new Error("مكتبة إنشاء البوربوينت لم تكتمل في التحميل.");
+        if (!window.PptxGenJS) {
+            throw new Error("لم يتم تحميل مكتبة PptxGenJS، يرجى التأكد من الاتصال بالإنترنت.");
+        }
         let pptx = new PptxGenJS();
         pptx.layout = 'LAYOUT_16x9';
 
@@ -471,12 +480,4 @@ ${fullText.substring(0, 16000)}`;
                     slide.addText(slideData.subtitle, {
                         x: 0.8, y: 1.1, w: 11.73, h: 0.4,
                         fontFace: 'Arial', fontSize: 14,
-                        color: COLOR_GOLD, align: 'right', isRtl: true
-                    });
-                }
-
-                const points = slideData.points || [];
-                const count = Math.min(points.length, 4);
-
-                points.slice(0, 4).forEach((pt, pIdx) => {
-                    let posX = 0.8, posY = 1.8, cardW = 11.73, c
+                        color: COLOR_GOLD, align: 'right', is
