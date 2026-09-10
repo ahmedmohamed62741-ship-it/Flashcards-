@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Termo Presentation Builder Pro 3.8 Ultra</title>
+    <title>Termo Academic Q&A PDF Generator 4.0</title>
     
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    
+    <!-- html2pdf Library for High Quality PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         body { 
@@ -47,7 +50,7 @@
             border-radius: 10px; 
             font-family: monospace; 
             font-size: 0.85rem; 
-            max-height: 250px; 
+            max-height: 200px; 
             overflow-y: auto; 
             padding: 12px; 
             color: #38bdf8; 
@@ -58,7 +61,7 @@
             word-break: break-word;
         }
         .btn-luxury {
-            background: linear-gradient(135deg, #38bdf8, #0284c7);
+            background: linear-gradient(135deg, #0284c7, #0369a1);
             color: #fff;
             border: none;
             font-weight: bold;
@@ -69,27 +72,116 @@
             cursor: pointer;
             width: 100%;
         }
-        .btn-luxury:active {
-            transform: scale(0.98);
+        .btn-luxury:hover {
+            background: linear-gradient(135deg, #38bdf8, #0284c7);
         }
         .btn-luxury:disabled {
             background: #334155 !important;
             color: #94a3b8 !important;
             cursor: not-allowed;
-            transform: none;
+        }
+
+        /* ---------------------------------------------------- */
+        /* STYLES FOR GENERATED ACADEMIC PDF DOCUMENT (Print Layout) */
+        /* ---------------------------------------------------- */
+        #pdfRenderArea {
+            display: none;
+            background-color: #ffffff;
+            color: #0f172a;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            direction: rtl;
+        }
+        .pdf-header {
+            border-bottom: 3px solid #0284c7;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pdf-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #0369a1;
+            margin: 0;
+        }
+        .pdf-subtitle {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        .pdf-badge {
+            background-color: #0284c7;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        /* Grid Layout to minimize pages */
+        .qa-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .qa-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            background-color: #f8fafc;
+            page-break-inside: avoid; /* Prevents splitting a Q&A across pages */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .question-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+        .q-number {
+            background-color: #0f172a;
+            color: #38bdf8;
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-size: 12px;
+        }
+        .answer-box {
+            font-size: 13px;
+            color: #1e293b;
+            line-height: 1.5;
+            background-color: #ffffff;
+            border-right: 3px solid #10b981;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+        .key-term {
+            display: inline-block;
+            background-color: #fef3c7;
+            color: #92400e;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-left: 4px;
         }
     </style>
 </head>
 <body>
 
-<div class="container" style="max-width: 800px;">
+<div class="container" style="max-width: 850px;">
     <div class="main-card">
         
         <!-- Header -->
         <div class="text-center mb-4">
-            <span class="badge bg-warning text-dark px-3 py-2 fw-bold rounded-pill mb-2">⚡ Termo Presentation Pro 3.8 Ultra</span>
-            <h2 class="fw-bold" style="color: #38bdf8;">👑 صانع العروض التقديمية الأكاديمي</h2>
-            <p class="text-slate-400 small mb-0">رفع مباشر وسريع لملفات الـ PDF والصور عبر Gemini 3.6</p>
+            <span class="badge bg-info text-dark px-3 py-2 fw-bold rounded-pill mb-2">⚡ Termo Academic PDF Pro 4.0</span>
+            <h2 class="fw-bold" style="color: #38bdf8;">📄 صانع المراجعات الأكاديمية (PDF)</h2>
+            <p class="text-slate-400 small mb-0">تحويل المحاضرات والـ PDF والروشتات إلى ملف Q&A مختصر وفاخر بأقل عدد صفحات</p>
         </div>
 
         <!-- API Key -->
@@ -100,20 +192,20 @@
 
         <!-- Section 1: Text -->
         <div class="section-box">
-            <h6 class="fw-bold text-info mb-2">✍️ 1. نسخ / كتابة نص المحاضرة (اختياري):</h6>
-            <textarea id="rawTextInput" class="form-control" rows="3" placeholder="الصق أي نص إضافي هنا إن وجد..."></textarea>
+            <h6 class="fw-bold text-info mb-2">✍️ 1. كتابة أو نسخ نص المحاضرة (اختياري):</h6>
+            <textarea id="rawTextInput" class="form-control" rows="3" placeholder="الصق أسئلة، ملخصات، أو نص المحاضرة هنا..."></textarea>
         </div>
 
         <!-- Section 2: Files -->
         <div class="section-box">
-            <h6 class="fw-bold text-info mb-2">📂 2. رفع ملفات المحاضرة (PDF / صور روشتات ومستندات / TXT):</h6>
+            <h6 class="fw-bold text-info mb-2">📂 2. رفع الملفات (PDF / صور روشتات ومستندات / TXT):</h6>
             <input type="file" id="fileInput" accept="image/*,application/pdf,.txt" multiple class="form-control mb-2" onchange="showSelectedFiles(this.files)">
             <div id="fileListNotice" class="small text-warning fw-bold"></div>
         </div>
 
         <!-- Submit Button -->
         <button id="processBtn" class="btn-luxury mb-3">
-            🚀 إنتاج وتنزيل ملف البوربوينت الفخم (PPTX)
+            🚀 تحليل الملفات وإنشاء ملخص PDF فاخر (سؤال وجواب)
         </button>
 
         <!-- Progress Bar -->
@@ -128,18 +220,49 @@
         </div>
 
         <!-- Logs Box -->
-        <div id="logBox" class="log-box" style="display:none;"></div>
+        <div id="logBox" class="log-box mb-3" style="display:none;"></div>
+
+        <!-- Preview & Download Section -->
+        <div id="downloadActionArea" style="display:none;" class="p-3 bg-dark rounded border border-info text-center">
+            <h5 class="text-success fw-bold mb-2">✅ تم تجهيز ملخص الـ PDF بنجاح!</h5>
+            <p class="text-light small mb-3">يمكنك معاينة المستند بالأسفل أو تنزيله مباشرة على جهازك.</p>
+            <button onclick="downloadPDF()" class="btn btn-success fw-bold px-4 py-2 me-2">
+                📥 تنزيل ملف الـ PDF مباشرة
+            </button>
+            <button onclick="window.print()" class="btn btn-outline-light fw-bold px-4 py-2">
+                🖨️ طباعة المستند
+            </button>
+        </div>
 
     </div>
 </div>
 
+<!-- CONTAINER FOR PDF RENDERING (Hidden until generated) -->
+<div class="container mt-4" style="max-width: 850px;">
+    <div id="pdfRenderArea">
+        <div class="pdf-header">
+            <div>
+                <h1 class="pdf-title" id="pdfDocTitle">ملخص المراجعة الأكاديمية</h1>
+                <div class="pdf-subtitle" id="pdfDocSubtitle">تنسيق مدمج - سؤال وجواب</div>
+            </div>
+            <div class="pdf-badge">Termo Academic PDF</div>
+        </div>
+
+        <div id="pdfContentList" class="qa-container">
+            <!-- Dynamic Q&A Cards will be injected here -->
+        </div>
+    </div>
+</div>
+
 <script>
-    // استخدام gemini-3.6-flash أساسياً كما طلبت السيرفرات
+    // قائمة النماذج المتاحة مع بدء التجربة بـ 3.6 كما طلبت
     const GEMINI_MODELS = [
         'gemini-3.6-flash',
         'gemini-2.5-flash',
         'gemini-1.5-flash'
     ];
+
+    let generatedJsonData = null;
 
     window.addEventListener('DOMContentLoaded', () => {
         const savedKey = localStorage.getItem('termo_gemini_key');
@@ -203,21 +326,6 @@
         });
     }
 
-    async function ensurePptxGenLoaded() {
-        if (window.PptxGenJS) return true;
-        logMessage("⏳ جاري جلب مكتبة إنشاء البوربوينت...");
-        return new Promise((resolve, reject) => {
-            const s = document.createElement('script');
-            s.src = "https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js";
-            s.onload = () => {
-                logMessage("✅ تم تحميل مكتبة البوربوينت بنجاح!");
-                resolve(true);
-            };
-            s.onerror = () => reject(new Error("تعذر تحميل مكتبة PptxGenJS. يرجى التأكد من الاتصال بالإنترنت."));
-            document.head.appendChild(s);
-        });
-    }
-
     async function callGeminiApiWithFallback(apiKey, partsPayload) {
         let lastError = null;
 
@@ -259,6 +367,7 @@
 
     async function startProcess() {
         const btn = document.getElementById('processBtn');
+        document.getElementById('downloadActionArea').style.display = 'none';
         
         try {
             const apiKey = document.getElementById('apiKeyInput').value.trim();
@@ -279,38 +388,34 @@
             btn.innerText = "⏳ جاري المعالجة... يرجى الانتظار";
             document.getElementById('logBox').innerHTML = '';
             
-            logMessage("🚀 بدء عملية الإنتاج بنجاح...");
-            updateProgress("جاري تجهيز الملفات والمدخلات...", 15);
+            logMessage("🚀 بدء عملية الاستخراج والتحليل الأكاديمي...");
+            updateProgress("جاري تجهيز وقراءة الملفات والمدخلات...", 15);
 
             const partsPayload = [];
 
-            const systemPrompt = `You are an expert presentation designer and university professor.
-Analyze all provided files (PDFs, images, or text) and extract the key academic concepts.
-Create a structured presentation array in strictly JSON format.
+            // System prompt focused on Q&A extraction & concise high-yield info
+            const systemPrompt = `You are a top-tier medical and academic professor specialized in summarizing complex lectures into concise, high-yield Question & Answer (Q&A) study guides.
 
-Return ONLY a valid JSON array matching this exact structure, without markdown backticks:
-[
-  {
-    "title": "Main Lecture Title",
-    "subtitle": "Subject / Overview",
-    "type": "cover",
-    "points": []
-  },
-  {
-    "title": "Slide Title",
-    "subtitle": "Section Subtitle",
-    "type": "content",
-    "points": [
-      {"header": "Point Title 1", "desc": "Clear detailed description and explanation."},
-      {"header": "Point Title 2", "desc": "Clear detailed description and explanation."}
-    ]
-  }
-]`;
+Analyze all attached materials (PDFs, images, handwritten notes, text) and generate a comprehensive yet extremely concise Q&A summary to save document pages.
+
+Return ONLY a valid JSON object matching this exact schema without markdown wrap:
+{
+  "doc_title": "عنوان المحاضرة الرئيسي",
+  "doc_subtitle": "الوحدة / اسم المادة - ملخص شفرة الامتحان",
+  "qa_items": [
+    {
+      "id": 1,
+      "question": "السؤال أو المفهوم الأساسي بشكل المباشر؟",
+      "answer": "الإجابة النموذجية المباشرة والدقيقة الشاملة بدون رغ زائد.",
+      "keywords": ["الكلمة المفتاحية 1", "ملاحظة هامة"]
+    }
+  ]
+}`;
 
             partsPayload.push({ text: systemPrompt });
 
             if (pastedText) {
-                partsPayload.push({ text: `[نص المحاضرة المكتوب]:\n${pastedText}` });
+                partsPayload.push({ text: `[النص المكتوب]:\n${pastedText}` });
             }
 
             if (files && files.length > 0) {
@@ -352,137 +457,63 @@ Return ONLY a valid JSON array matching this exact structure, without markdown b
                 }
             }
 
-            updateProgress("جاري تحليل المحتوى وتوليد الشرائح عبر الذكاء الاصطناعي...", 50);
-            logMessage("🧠 إرسال البيانات للذكاء الاصطناعي لاستخراج الشرائح...");
+            updateProgress("جاري استخراج الأسئلة والإجابات عبر الذكاء الاصطناعي...", 50);
+            logMessage("🧠 إرسال المحتوى إلى Gemini لاستخراج الأسئلة النموذجية...");
 
             const rawJsonStr = await callGeminiApiWithFallback(apiKey, partsPayload);
-            logMessage("✨ تم استلام الرد من الذكاء الاصطناعي بنجاح!");
+            logMessage("✨ تم استلام الرد وتحليل البيانات بنجاح!");
 
             const cleanedStr = rawJsonStr.replace(/```json/gi, '').replace(/```/g, '').trim();
-            const slideData = JSON.parse(cleanedStr);
+            generatedJsonData = JSON.parse(cleanedStr);
 
-            logMessage(`📊 تم تكوين هيكل العرض التقديمي (${slideData.length} شرائح).`);
-            updateProgress("جاري إعداد وتنسيق ملف البوربوينت...", 85);
+            logMessage(`📊 تم تكوين (${generatedJsonData.qa_items ? generatedJsonData.qa_items.length : 0}) سؤال وإجابة بنجاح.`);
+            updateProgress("جاري بناء وتنسيق مستند الـ PDF الفاخر...", 85);
 
-            await ensurePptxGenLoaded();
-            await createPptxFile(slideData);
+            renderPdfPreview(generatedJsonData);
 
             updateProgress("اكتملت العملية بنجاح! 100%", 100);
-            logMessage("🎉 تم تنزيل ملف البوربوينت (PPTX) بنجاح إلى جهازك!");
+            logMessage("🎉 المستند جاهز للتحميل والمعاينة الآن!");
+            
+            document.getElementById('downloadActionArea').style.display = 'block';
 
         } catch (err) {
             logMessage(`❌ خطأ: ${err.message}`, true);
             alert(`حدث خطأ: ${err.message}`);
         } finally {
             btn.disabled = false;
-            btn.innerText = "🚀 إنتاج وتنزيل ملف البوربوينت الفخم (PPTX)";
+            btn.innerText = "🚀 تحليل الملفات وإنشاء ملخص PDF فاخر (سؤال وجواب)";
         }
     }
 
-    async function createPptxFile(slides) {
-        let pptx = new PptxGenJS();
-        pptx.layout = 'LAYOUT_16x9';
+    function renderPdfPreview(data) {
+        document.getElementById('pdfDocTitle').innerText = data.doc_title || "ملخص المراجعة الأكاديمية";
+        document.getElementById('pdfDocSubtitle').innerText = data.doc_subtitle || "سؤال وجواب - مراجعة مركزة";
 
-        const COLOR_BG = '0B132B';
-        const COLOR_CARD = '1C2541';
-        const COLOR_CYAN = '38BDF8';
-        const COLOR_GOLD = 'FFD166';
-        const COLOR_TEXT = 'F8FAFC';
-        const COLOR_MUTED = '94A3B8';
+        const listContainer = document.getElementById('pdfContentList');
+        listContainer.innerHTML = '';
 
-        slides.forEach((slideData, idx) => {
-            let slide = pptx.addSlide();
-            slide.background = { color: COLOR_BG };
-
-            slide.addText('⚡ Termo Presentation Pro', {
-                x: 0.5, y: 7.0, w: 4.0, h: 0.3,
-                fontFace: 'Arial', fontSize: 10, bold: true,
-                color: COLOR_CYAN, align: 'left'
-            });
-
-            slide.addText(`Slide ${idx + 1}`, {
-                x: 11.5, y: 7.0, w: 1.2, h: 0.3,
-                fontFace: 'Arial', fontSize: 10,
-                color: COLOR_MUTED, align: 'right'
-            });
-
-            if (slideData.type === 'cover' || idx === 0) {
-                slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
-                    x: 0.8, y: 1.2, w: 11.73, h: 5.0,
-                    fill: { color: COLOR_CARD },
-                    line: { color: COLOR_GOLD, width: 2 }
-                });
-
-                slide.addText(slideData.title || 'عرض تقديمي أكاديمي', {
-                    x: 1.2, y: 2.2, w: 10.93, h: 1.5,
-                    fontFace: 'Arial', fontSize: 36, bold: true,
-                    color: COLOR_GOLD, align: 'center', isRtl: true
-                });
-
-                if (slideData.subtitle) {
-                    slide.addText(slideData.subtitle, {
-                        x: 1.2, y: 3.8, w: 10.93, h: 0.8,
-                        fontFace: 'Arial', fontSize: 20,
-                        color: COLOR_CYAN, align: 'center', isRtl: true
-                    });
-                }
-            } else {
-                slide.addText(slideData.title || `المحور ${idx}`, {
-                    x: 0.8, y: 0.4, w: 11.73, h: 0.8,
-                    fontFace: 'Arial', fontSize: 26, bold: true,
-                    color: COLOR_CYAN, align: 'right', isRtl: true
-                });
-
-                if (slideData.subtitle) {
-                    slide.addText(slideData.subtitle, {
-                        x: 0.8, y: 1.1, w: 11.73, h: 0.4,
-                        fontFace: 'Arial', fontSize: 14,
-                        color: COLOR_GOLD, align: 'right', isRtl: true
-                    });
-                }
-
-                const points = slideData.points || [];
-                const count = Math.min(points.length, 4);
-
-                points.slice(0, 4).forEach((pt, pIdx) => {
-                    let posX = 0.8, posY = 1.8, cardW = 11.73, cardH = 1.1;
-
-                    if (count === 2) {
-                        cardW = 5.6; cardH = 4.8;
-                        posX = 0.8 + (pIdx * 6.13);
-                    } else if (count >= 3) {
-                        cardW = 5.6; cardH = 2.2;
-                        const row = Math.floor(pIdx / 2);
-                        const col = pIdx % 2;
-                        posX = 0.8 + (col * 6.13);
-                        posY = 1.8 + (row * 2.5);
-                    }
-
-                    slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
-                        x: posX, y: posY, w: cardW, h: cardH,
-                        fill: { color: COLOR_CARD },
-                        line: { color: pIdx === 0 ? COLOR_GOLD : '334155', width: 1.5 }
-                    });
-
-                    slide.addText(pt.header || '', {
-                        x: posX + 0.2, y: posY + 0.2, w: cardW - 0.4, h: 0.4,
-                        fontFace: 'Arial', fontSize: 16, bold: true,
-                        color: COLOR_TEXT, align: 'right', isRtl: true
-                    });
-
-                    if (pt.desc) {
-                        slide.addText(pt.desc, {
-                            x: posX + 0.2, y: posY + 0.65, w: cardW - 0.4, h: cardH - 0.75,
-                            fontFace: 'Arial', fontSize: 12,
-                            color: COLOR_MUTED, align: 'right', isRtl: true
-                        });
-                    }
-                });
+        const items = data.qa_items || [];
+        items.forEach((item, index) => {
+            let keywordsHtml = '';
+            if (item.keywords && item.keywords.length > 0) {
+                keywordsHtml = `<div class="mt-1">` + 
+                    item.keywords.map(k => `<span class="key-term">📌 ${k}</span>`).join(' ') + 
+                    `</div>`;
             }
+
+            const cardHtml = `
+                <div class="qa-card">
+                    <div class="question-title">
+                        <span class="q-number">س ${item.id || (index + 1)}</span>
+                        <span>${item.question}</span>
+                    </div>
+                    <div class="answer-box">
+                        <strong>الإجابة:</strong> ${item.answer}
+                        ${keywordsHtml}
+                    </div>
+                </div>
+            `;
+            listContainer.innerHTML += cardHtml;
         });
 
-        await pptx.writeFile({ fileName: `Termo_Presentation_${Date.now()}.pptx` });
-    }
-</script>
-</body>
-    </html>
+ 
