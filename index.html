@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Termo Academic Q&A PDF Generator 4.0</title>
+    <title>Termo Academic PDF Pro 4.0</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
@@ -68,12 +68,14 @@
             border-radius: 12px;
             padding: 16px;
             font-size: 1.15rem;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             cursor: pointer;
             width: 100%;
+            display: block;
         }
-        .btn-luxury:hover {
-            background: linear-gradient(135deg, #38bdf8, #0284c7);
+        .btn-luxury:active {
+            transform: scale(0.98);
+            opacity: 0.9;
         }
         .btn-luxury:disabled {
             background: #334155 !important;
@@ -184,7 +186,7 @@
         <!-- API Key -->
         <div class="mb-4">
             <label class="form-label text-warning small fw-bold">🔑 Gemini API Key:</label>
-            <input type="password" id="apiKeyInput" class="form-control" placeholder="أدخل مفتاح AIzaSy..." onkeyup="saveApiKey()" onchange="saveApiKey()">
+            <input type="password" id="apiKeyInput" class="form-control" placeholder="أدخل مفتاح AIzaSy..." oninput="window.saveApiKey()">
         </div>
 
         <!-- Section 1: Text -->
@@ -196,12 +198,12 @@
         <!-- Section 2: Files -->
         <div class="section-box">
             <h6 class="fw-bold text-info mb-2">📂 2. رفع الملفات (PDF / صور روشتات ومستندات / TXT):</h6>
-            <input type="file" id="fileInput" accept="image/*,application/pdf,.txt" multiple class="form-control mb-2" onchange="showSelectedFiles(this.files)">
+            <input type="file" id="fileInput" accept="image/*,application/pdf,.txt" multiple class="form-control mb-2" onchange="window.showSelectedFiles(this.files)">
             <div id="fileListNotice" class="small text-warning fw-bold"></div>
         </div>
 
-        <!-- Submit Button linked directly with onclick -->
-        <button id="processBtn" onclick="startProcess()" class="btn-luxury mb-3">
+        <!-- Submit Button explicitly defined as type="button" and window.startProcess() -->
+        <button type="button" id="processBtn" onclick="window.startProcess()" class="btn-luxury mb-3">
             🚀 تحليل الملفات وإنشاء ملخص PDF فاخر (سؤال وجواب)
         </button>
 
@@ -223,10 +225,10 @@
         <div id="downloadActionArea" style="display:none;" class="p-3 bg-dark rounded border border-info text-center">
             <h5 class="text-success fw-bold mb-2">✅ تم تجهيز ملخص الـ PDF بنجاح!</h5>
             <p class="text-light small mb-3">يمكنك معاينة المستند بالأسفل أو تنزيله مباشرة على جهازك.</p>
-            <button onclick="downloadPDF()" class="btn btn-success fw-bold px-4 py-2 me-2">
+            <button type="button" onclick="window.downloadPDF()" class="btn btn-success fw-bold px-4 py-2 me-2">
                 📥 تنزيل ملف الـ PDF مباشرة
             </button>
-            <button onclick="window.print()" class="btn btn-outline-light fw-bold px-4 py-2">
+            <button type="button" onclick="window.print()" class="btn btn-outline-light fw-bold px-4 py-2">
                 🖨️ طباعة المستند
             </button>
         </div>
@@ -260,29 +262,15 @@
 
     let generatedJsonData = null;
 
-    // Load API Key safely on load
-    function initApp() {
-        const savedKey = localStorage.getItem('termo_gemini_key');
-        if (savedKey) {
-            const input = document.getElementById('apiKeyInput');
-            if (input) input.value = savedKey;
-        }
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initApp);
-    } else {
-        initApp();
-    }
-
-    function saveApiKey() {
+    // Attach all core functions directly to window object
+    window.saveApiKey = function() {
         const input = document.getElementById('apiKeyInput');
         if (input) {
             localStorage.setItem('termo_gemini_key', input.value.trim());
         }
-    }
+    };
 
-    function logMessage(msg, isError = false) {
+    window.logMessage = function(msg, isError = false) {
         const logBox = document.getElementById('logBox');
         if (!logBox) return;
         logBox.style.display = 'block';
@@ -290,9 +278,9 @@
         const time = new Date().toLocaleTimeString('ar-EG');
         logBox.innerHTML += `<div style="color: ${color}">[${time}] ${msg}</div>`;
         logBox.scrollTop = logBox.scrollHeight;
-    }
+    };
 
-    function updateProgress(text, percent) {
+    window.updateProgress = function(text, percent) {
         const sec = document.getElementById('progressSection');
         if (sec) sec.style.display = 'block';
         
@@ -304,9 +292,9 @@
 
         const bar = document.getElementById('progressBar');
         if (bar) bar.style.width = `${percent}%`;
-    }
+    };
 
-    function showSelectedFiles(files) {
+    window.showSelectedFiles = function(files) {
         const notice = document.getElementById('fileListNotice');
         if (!notice) return;
         if (files && files.length > 0) {
@@ -315,7 +303,7 @@
         } else {
             notice.innerText = '';
         }
-    }
+    };
 
     function fileToBase64(file) {
         return new Promise((resolve, reject) => {
@@ -342,7 +330,7 @@
         let lastError = null;
 
         for (const model of GEMINI_MODELS) {
-            logMessage(`🤖 جاري الاتصال بالنموذج الذكي (${model})...`);
+            window.logMessage(`🤖 جاري الاتصال بالنموذج الذكي (${model})...`);
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             
             const bodyData = {
@@ -366,44 +354,52 @@
                 } else {
                     const errData = await res.json().catch(() => ({}));
                     const errMsg = errData.error?.message || `Status ${res.status}`;
-                    logMessage(`⚠️ النموذج ${model} أعاد خطأ: ${errMsg}`);
+                    window.logMessage(`⚠️ النموذج ${model} أعاد خطأ: ${errMsg}`);
                     lastError = new Error(errMsg);
                 }
             } catch (err) {
-                logMessage(`⚠️ تعذر الاتصال بـ ${model}: ${err.message}`);
+                window.logMessage(`⚠️ تعذر الاتصال بـ ${model}: ${err.message}`);
                 lastError = err;
             }
         }
         throw lastError || new Error("فشلت جميع محاولات الاتصال بالذكاء الاصطناعي.");
     }
 
-    async function startProcess() {
+    // Main execution method attached globally
+    window.startProcess = async function() {
         const btn = document.getElementById('processBtn');
         const downloadArea = document.getElementById('downloadActionArea');
         if (downloadArea) downloadArea.style.display = 'none';
-        
+
         try {
             const apiKeyInput = document.getElementById('apiKeyInput');
             const apiKey = apiKeyInput ? apiKeyInput.value.trim() : '';
+
             if (!apiKey) {
-                alert("يرجى إدخال مفتاح Gemini API Key أولاً!");
+                alert("⚠️ يرجى إدخال مفتاح Gemini API Key أولاً في الحقل المخصص!");
+                if (apiKeyInput) apiKeyInput.focus();
                 return;
             }
 
-            const pastedText = document.getElementById('rawTextInput').value.trim();
-            const files = document.getElementById('fileInput').files;
+            const rawTextInput = document.getElementById('rawTextInput');
+            const pastedText = rawTextInput ? rawTextInput.value.trim() : '';
+            
+            const fileInput = document.getElementById('fileInput');
+            const files = fileInput ? fileInput.files : null;
 
             if (!pastedText && (!files || files.length === 0)) {
-                alert("يرجى اختيار ملف (PDF/صورة) أو كتابة نص المحاضرة للبدء!");
+                alert("⚠️ يرجى اختيار ملف (PDF/صورة) أو كتابة نص المحاضرة للبدء!");
                 return;
             }
 
             btn.disabled = true;
             btn.innerText = "⏳ جاري المعالجة... يرجى الانتظار";
-            document.getElementById('logBox').innerHTML = '';
             
-            logMessage("🚀 بدء عملية الاستخراج والتحليل الأكاديمي...");
-            updateProgress("جاري تجهيز وقراءة الملفات والمدخلات...", 15);
+            const logBox = document.getElementById('logBox');
+            if (logBox) logBox.innerHTML = '';
+            
+            window.logMessage("🚀 بدء عملية الاستخراج والتحليل الأكاديمي...");
+            window.updateProgress("جاري تجهيز وقراءة الملفات والمدخلات...", 15);
 
             const partsPayload = [];
 
@@ -434,14 +430,14 @@ Return ONLY a valid JSON object matching this exact schema without markdown wrap
             if (files && files.length > 0) {
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
-                    logMessage(`📂 قراءة الملف (${i + 1} من ${files.length}): ${file.name}...`);
+                    window.logMessage(`📂 قراءة الملف (${i + 1} من ${files.length}): ${file.name}...`);
 
                     if (file.size > 19 * 1024 * 1024) {
                         throw new Error(`الملف ${file.name} حجمه كبير جداً (أكبر من 19MB).`);
                     }
 
                     if (file.type === "application/pdf" || file.name.endsWith('.pdf')) {
-                        logMessage(`📄 جاري تجهيز ملف الـ PDF المباشر (${file.name})...`);
+                        window.logMessage(`📄 جاري تحويل وقراءة ملف PDF المباشر (${file.name})...`);
                         const base64Data = await fileToBase64(file);
                         partsPayload.push({
                             inline_data: {
@@ -449,10 +445,10 @@ Return ONLY a valid JSON object matching this exact schema without markdown wrap
                                 data: base64Data
                             }
                         });
-                        logMessage(`✅ تم إرفاق ملف PDF بنجاح (${(file.size / (1024*1024)).toFixed(2)} MB)`);
+                        window.logMessage(`✅ تم إرفاق ملف PDF بنجاح (${(file.size / (1024*1024)).toFixed(2)} MB)`);
                     } 
                     else if (file.type.startsWith("image/")) {
-                        logMessage(`🖼️ جاري تجهيز الصورة (${file.name})...`);
+                        window.logMessage(`🖼️ جاري تجهيز الصورة (${file.name})...`);
                         const base64Data = await fileToBase64(file);
                         partsPayload.push({
                             inline_data: {
@@ -460,45 +456,47 @@ Return ONLY a valid JSON object matching this exact schema without markdown wrap
                                 data: base64Data
                             }
                         });
-                        logMessage(`✅ تم إرفاق الصورة بنجاح`);
+                        window.logMessage(`✅ تم إرفاق الصورة بنجاح`);
                     } 
                     else {
-                        logMessage(`📝 جاري قراءة الملف النصي (${file.name})...`);
+                        window.logMessage(`📝 جاري قراءة الملف النصي (${file.name})...`);
                         const txtContent = await readTextFile(file);
                         partsPayload.push({ text: `[محتوى ملف ${file.name}]:\n${txtContent}` });
                     }
                 }
             }
 
-            updateProgress("جاري استخراج الأسئلة والإجابات عبر الذكاء الاصطناعي...", 50);
-            logMessage("🧠 إرسال المحتوى إلى Gemini لاستخراج الأسئلة النموذجية...");
+            window.updateProgress("جاري استخراج الأسئلة والإجابات عبر الذكاء الاصطناعي...", 50);
+            window.logMessage("🧠 إرسال المحتوى إلى Gemini لاستخراج الأسئلة النموذجية...");
 
             const rawJsonStr = await callGeminiApiWithFallback(apiKey, partsPayload);
-            logMessage("✨ تم استلام الرد وتحليل البيانات بنجاح!");
+            window.logMessage("✨ تم استلام الرد وتحليل البيانات بنجاح!");
 
             const cleanedStr = rawJsonStr.replace(/```json/gi, '').replace(/```/g, '').trim();
             generatedJsonData = JSON.parse(cleanedStr);
 
-            logMessage(`📊 تم تكوين (${generatedJsonData.qa_items ? generatedJsonData.qa_items.length : 0}) سؤال وإجابة بنجاح.`);
-            updateProgress("جاري بناء وتنسيق مستند الـ PDF الفاخر...", 85);
+            window.logMessage(`📊 تم تكوين (${generatedJsonData.qa_items ? generatedJsonData.qa_items.length : 0}) سؤال وإجابة بنجاح.`);
+            window.updateProgress("جاري بناء وتنسيق مستند الـ PDF الفاخر...", 85);
 
-            renderPdfPreview(generatedJsonData);
+            window.renderPdfPreview(generatedJsonData);
 
-            updateProgress("اكتملت العملية بنجاح! 100%", 100);
-            logMessage("🎉 المستند جاهز للتحميل والمعاينة الآن!");
+            window.updateProgress("اكتملت العملية بنجاح! 100%", 100);
+            window.logMessage("🎉 المستند جاهز للتحميل والمعاينة الآن!");
             
             if (downloadArea) downloadArea.style.display = 'block';
 
         } catch (err) {
-            logMessage(`❌ خطأ: ${err.message}`, true);
-            alert(`حدث خطأ: ${err.message}`);
+            window.logMessage(`❌ خطأ: ${err.message}`, true);
+            alert(`⚠️ حدث خطأ أثناء المعالجة:\n${err.message}`);
         } finally {
-            btn.disabled = false;
-            btn.innerText = "🚀 تحليل الملفات وإنشاء ملخص PDF فاخر (سؤال وجواب)";
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = "🚀 تحليل الملفات وإنشاء ملخص PDF فاخر (سؤال وجواب)";
+            }
         }
-    }
+    };
 
-    function renderPdfPreview(data) {
+    window.renderPdfPreview = function(data) {
         document.getElementById('pdfDocTitle').innerText = data.doc_title || "ملخص المراجعة الأكاديمية";
         document.getElementById('pdfDocSubtitle').innerText = data.doc_subtitle || "سؤال وجواب - مراجعة مركزة";
 
@@ -517,12 +515,4 @@ Return ONLY a valid JSON object matching this exact schema without markdown wrap
             const cardHtml = `
                 <div class="qa-card">
                     <div class="question-title">
-                        <span class="q-number">س ${item.id || (index + 1)}</span>
-                        <span>${item.question}</span>
-                    </div>
-                    <div class="answer-box">
-                        <strong>الإجابة:</strong> ${item.answer}
-                        ${keywordsHtml}
-                    </div>
-            </div>
-    
+                        <span class="q-number">س ${item.id
