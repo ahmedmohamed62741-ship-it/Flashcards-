@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Termo Luxury Slide Builder</title>
+    <title>Termo Presentation Builder Pro</title>
     
-    <!-- PptxGenJS CDN -->
+    <!-- PDF.js & PptxGenJS CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     
@@ -48,7 +49,7 @@
             border-radius: 10px; 
             font-family: monospace; 
             font-size: 0.85rem; 
-            max-height: 200px; 
+            max-height: 220px; 
             overflow-y: auto; 
             padding: 12px; 
             color: #38bdf8; 
@@ -75,14 +76,14 @@
 </head>
 <body>
 
-<div class="container" style="max-width: 800px;">
+<div class="container" style="max-width: 820px;">
     <div class="main-card">
         
         <!-- Header -->
         <div class="text-center mb-4">
             <span class="badge bg-warning text-dark px-3 py-2 fw-bold rounded-pill mb-2">⚡ Termo Presentation Pro</span>
-            <h2 class="fw-bold" style="color: #38bdf8;">👑 صانع العروض التقديمية الفخم</h2>
-            <p class="text-slate-400 small mb-0">يمكنك نسخ النص مباشرة أو رفع الصور وسيتم التعرف عليها وإنشاء البوربوينت فورا</p>
+            <h2 class="fw-bold" style="color: #38bdf8;">👑 صانع العروض التقديمية الأكاديمي</h2>
+            <p class="text-slate-400 small mb-0">يدعم النص المباشر + الصور + ملفات الـ PDF والملفات النصية</p>
         </div>
 
         <!-- API Key -->
@@ -91,20 +92,20 @@
             <input type="password" id="apiKeyInput" class="form-control" placeholder="أدخل مفتاح AIzaSy..." onchange="saveApiKey()">
         </div>
 
-        <!-- Section 1: Direct Text Area (Always Visible) -->
+        <!-- Section 1: Text Area -->
         <div class="section-box">
-            <h6 class="fw-bold text-info mb-2">✍️ الخيار الأول: نسخ / كتابة نص المحاضرة هنا مباشرةً</h6>
-            <textarea id="rawTextInput" class="form-control" rows="5" placeholder="الصق أو اكتب نص المحاضرة هنا بالكامل..."></textarea>
+            <h6 class="fw-bold text-info mb-2">✍️ 1. نسخ / كتابة النص المباشر:</h6>
+            <textarea id="rawTextInput" class="form-control" rows="4" placeholder="الصق نص المحاضرة هنا إن وجد..."></textarea>
         </div>
 
-        <!-- Section 2: Image & File Upload -->
+        <!-- Section 2: Files & Images Upload -->
         <div class="section-box">
-            <h6 class="fw-bold text-info mb-2">📸 الخيار الثاني: رفع صور المحاضرة أو المذكرات</h6>
-            <input type="file" id="fileInput" accept="image/*" multiple class="form-control mb-2" onchange="showSelectedFiles(this.files)">
+            <h6 class="fw-bold text-info mb-2">📂 2. رفع صور أو ملفات (PDF / TXT / Images):</h6>
+            <input type="file" id="fileInput" accept="image/*,application/pdf,.txt" multiple class="form-control mb-2" onchange="showSelectedFiles(this.files)">
             <div id="fileListNotice" class="small text-warning"></div>
         </div>
 
-        <!-- Submit Button -->
+        <!-- Process Button -->
         <button id="processBtn" class="btn btn-luxury w-100 mb-3" onclick="startProcess()">
             🚀 إنتاج وتنزيل ملف البوربوينت الفخم (PPTX)
         </button>
@@ -127,7 +128,8 @@
 </div>
 
 <script>
-    // حفظ واسترجاع API Key
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
     window.onload = () => {
         const savedKey = localStorage.getItem('termo_gemini_key');
         if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
@@ -155,13 +157,12 @@
     function showSelectedFiles(files) {
         const notice = document.getElementById('fileListNotice');
         if (files && files.length > 0) {
-            notice.innerText = `📁 تم اختيار ${files.length} صورة/ملف جاهز للرفع والتعرف الضوئي.`;
+            notice.innerText = `📁 تم اختيار (${files.length}) ملفات/صور جاهزة للمعالجة.`;
         } else {
             notice.innerText = '';
         }
     }
 
-    // تحويل الملف إلى Base64 نقي
     function fileToBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -171,59 +172,96 @@
         });
     }
 
+    function readTextFile(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+            reader.readAsText(file);
+        });
+    }
+
+    async function processPdfFile(file, apiKey) {
+        logMessage(`جاري فتح وتحليل ملف الـ PDF: (${file.name})...`);
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let pdfCombinedText = "";
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+            logMessage(`معالجة صفحة PDF رقم ${i} من ${pdf.numPages}...`);
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const extractedStr = textContent.items.map(item => item.str).join(" ");
+
+            // إذا كانت الصفحة تحتوي نصاً إلكترونياً نكتفي به، وإذا كانت مصورة نطبق OCR
+            if (extractedStr.trim().length > 40) {
+                pdfCombinedText += `\n[PDF Page ${i}]:\n` + extractedStr;
+            } else {
+                logMessage(`الصفحة ${i} مصورة/سكانر، جاري معالجتها بالـ AI OCR...`);
+                const viewport = page.getViewport({ scale: 1.3 });
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+                const base64 = canvas.toDataURL('image/jpeg', 0.75).split(',')[1];
+                const ocrText = await callGeminiVisionOCR(apiKey, base64, 'image/jpeg');
+                pdfCombinedText += `\n[PDF Page ${i} (OCR)]:\n` + ocrText;
+            }
+        }
+        return pdfCombinedText;
+    }
+
     async function startProcess() {
         const apiKey = document.getElementById('apiKeyInput').value.trim();
-        if (!apiKey) return alert("يرجى أدخال Gemini API Key أولاً!");
+        if (!apiKey) return alert("يرجى إدخال مفتاح Gemini API Key أولاً!");
 
         const pastedText = document.getElementById('rawTextInput').value.trim();
         const files = document.getElementById('fileInput').files;
 
         if (!pastedText && (!files || files.length === 0)) {
-            return alert("يرجى وضع نص في المربع أو اختيار صورة على الأقل!");
+            return alert("يرجى وضع نص أو اختيار صور/ملفات للبدء!");
         }
 
         document.getElementById('logBox').innerHTML = '';
-        let fullCombinedText = pastedText ? `[النص المنسوخ]:\n${pastedText}\n\n` : '';
+        let fullCombinedText = pastedText ? `[النص المباشر]:\n${pastedText}\n\n` : '';
 
         try {
-            // معالجة الصور إذا تم رفعها
             if (files && files.length > 0) {
-                logMessage(`بدء معالجة (${files.length}) صورة للتعرف الضوئي...`);
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
-                    updateProgress(`جاري قراءة ومعالجة الصورة ${i + 1} من ${files.length}...`, Math.round(((i + 1) / files.length) * 50));
-                    logMessage(`قراءة الصورة: ${file.name}...`);
-                    
-                    const base64Data = await fileToBase64(file);
-                    logMessage(`إرسال الصورة ${i + 1} إلى Gemini OCR للتعرف على النص...`);
-                    const extractedText = await callGeminiVisionOCR(apiKey, base64Data, file.type || 'image/jpeg');
-                    
-                    if (extractedText) {
-                        fullCombinedText += `\n--- محتوى الصورة (${file.name}) ---\n` + extractedText;
-                        logMessage(`✅ تم التعرف على نص الصورة ${i + 1} بنجاح!`);
-                    } else {
-                        logMessage(`⚠️ لم يتم استخراج نص من الصورة ${i + 1}`, true);
+                    updateProgress(`جاري معالجة الملف (${i + 1} من ${files.length}): ${file.name}`, Math.round(((i + 1) / files.length) * 60));
+
+                    if (file.type === "application/pdf" || file.name.endsWith('.pdf')) {
+                        const pdfText = await processPdfFile(file, apiKey);
+                        fullCombinedText += pdfText;
+                    } else if (file.type.startsWith("image/")) {
+                        logMessage(`قراءة وتحليل الصورة: ${file.name}...`);
+                        const base64Data = await fileToBase64(file);
+                        const extractedText = await callGeminiVisionOCR(apiKey, base64Data, file.type || 'image/jpeg');
+                        fullCombinedText += `\n[نص الصورة ${file.name}]:\n` + extractedText;
+                    } else if (file.type.startsWith("text/") || file.name.endsWith('.txt')) {
+                        logMessage(`قراءة الملف النصي: ${file.name}...`);
+                        const txtContent = await readTextFile(file);
+                        fullCombinedText += `\n[محتوى الملف ${file.name}]:\n` + txtContent;
                     }
                 }
             }
 
             if (!fullCombinedText.trim()) {
-                throw new Error("لم يتم العثور على أي نص معالج للبدء في إنشاء السلايدات.");
+                throw new Error("لم يتم العثور على أي نص معالج للبدء في إنتاج السلايدات.");
             }
 
-            // تحليل المحتوى وهندسة السلايدات
-            logMessage("جاري إرسال النص الكامل للذكاء الاصطناعي لبناء هيكل العرض التقديمي...");
-            updateProgress("صياغة الشرائح والهيكل الأكاديمي...", 75);
+            logMessage("جاري صياغة السلايدات والهيكل الأكاديمي بواسطة AI...");
+            updateProgress("هندسة وتنسيق العرض التقديمي...", 80);
 
             const slideData = await generatePresentationJSON(apiKey, fullCombinedText);
-            logMessage(`✅ تم إنشاء هيكل لـ (${slideData.length}) شرائح بنجاح!`);
+            logMessage(`✅ تم بناء هيكل لـ (${slideData.length}) شرائح بنجاح!`);
 
-            // بناء ملف البوربوينت
-            updateProgress("جاري تصميم ملف البوربوينت الفخم وتنسيقه...", 90);
+            updateProgress("جاري بناء ملف البوربوينت الفخم وتنزيله...", 95);
             await createPptxFile(slideData);
 
             updateProgress("اكتملت العملية بنجاح!", 100);
-            logMessage("🎉 تم تنزيل ملف البوربوينت الفخم بنجاح إلى جهازك!");
+            logMessage("🎉 تم تنزيل ملف PowerPoint الفخم بنجاح إلى جهازك!");
 
         } catch (err) {
             logMessage(`❌ خطأ: ${err.message}`, true);
@@ -231,14 +269,12 @@
         }
     }
 
-    // التعرف على الصور عبر Gemini Vision
     async function callGeminiVisionOCR(apiKey, base64Data, mimeType) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-        
         const payload = {
             contents: [{
                 parts: [
-                    { text: "Extract all text from this lecture image accurately. Keep both Arabic and English technical terms intact. Output plain text only." },
+                    { text: "Extract all text cleanly. Keep both Arabic & English terms perfectly intact. Plain text output only." },
                     { inline_data: { mime_type: mimeType, data: base64Data } }
                 ]
             }]
@@ -252,17 +288,15 @@
 
         if (!res.ok) {
             const errData = await res.json();
-            throw new Error(`خطأ من سيرفر Gemini (${res.status}): ${errData.error?.message || 'فشل الاتصال'}`);
+            throw new Error(`خطأ Gemini Vision: ${errData.error?.message || 'فشل الاتصال'}`);
         }
 
         const data = await res.json();
         return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
     }
 
-    // إنشاء الهيكل الهندسي للبوربوينت (JSON)
     async function generatePresentationJSON(apiKey, fullText) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-        
         const prompt = `You are an expert presentation designer.
 Convert the following lecture content into a structured academic presentation array in strictly JSON format.
 
@@ -288,7 +322,7 @@ Schema:
 ]
 
 Content:
-${fullText.substring(0, 15000)}`;
+${fullText.substring(0, 16000)}`;
 
         const payload = {
             contents: [{ parts: [{ text: prompt }] }],
@@ -303,34 +337,30 @@ ${fullText.substring(0, 15000)}`;
 
         if (!res.ok) {
             const errData = await res.json();
-            throw new Error(`خطأ أثناء إنشاء هيكل السلايدات: ${errData.error?.message || ''}`);
+            throw new Error(`خطأ إنشاء السلايدات: ${errData.error?.message || ''}`);
         }
 
         const data = await res.json();
         let rawStr = data.candidates[0].content.parts[0].text;
-        
-        // تنظيف مخرجات JSON
         rawStr = rawStr.replace(/```json/gi, '').replace(/```/g, '').trim();
         return JSON.parse(rawStr);
     }
 
-    // بناء وتنسيق البوربوينت الفخم بواسطة PptxGenJS
     async function createPptxFile(slides) {
         let pptx = new PptxGenJS();
         pptx.layout = 'LAYOUT_16x9';
 
-        const COLOR_BG = '0B132B';      // أزرق ملكي غامق
-        const COLOR_CARD = '1C2541';    // كحلي فخم
-        const COLOR_CYAN = '38BDF8';    // سماوي مضيء
-        const COLOR_GOLD = 'FFD166';    // ذهبي ملكي
-        const COLOR_TEXT = 'F8FAFC';    // أبيض ناصع
-        const COLOR_MUTED = '94A3B8';   // رمادي هادئ
+        const COLOR_BG = '0B132B';
+        const COLOR_CARD = '1C2541';
+        const COLOR_CYAN = '38BDF8';
+        const COLOR_GOLD = 'FFD166';
+        const COLOR_TEXT = 'F8FAFC';
+        const COLOR_MUTED = '94A3B8';
 
         slides.forEach((slideData, idx) => {
             let slide = pptx.addSlide();
             slide.background = { color: COLOR_BG };
 
-            // العلامة المائية للغلاف والفوتر
             slide.addText('⚡ Termo Presentation Pro', {
                 x: 0.5, y: 7.0, w: 4.0, h: 0.3,
                 fontFace: 'Arial', fontSize: 10, bold: true,
@@ -344,7 +374,6 @@ ${fullText.substring(0, 15000)}`;
             });
 
             if (slideData.type === 'cover' || idx === 0) {
-                // شريحة العنوان الرئيسي
                 slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
                     x: 0.8, y: 1.2, w: 11.73, h: 5.0,
                     fill: { color: COLOR_CARD },
@@ -365,7 +394,6 @@ ${fullText.substring(0, 15000)}`;
                     });
                 }
             } else {
-                // شرائح المحتوى
                 slide.addText(slideData.title || `المحور ${idx}`, {
                     x: 0.8, y: 0.4, w: 11.73, h: 0.8,
                     fontFace: 'Arial', fontSize: 26, bold: true,
@@ -397,7 +425,6 @@ ${fullText.substring(0, 15000)}`;
                         posY = 1.8 + (row * 2.5);
                     }
 
-                    // كروت المحتوى المتناسقة
                     slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
                         x: posX, y: posY, w: cardW, h: cardH,
                         fill: { color: COLOR_CARD },
