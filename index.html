@@ -3,516 +3,367 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Termo Academic PDF Pro 4.0</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    
-    <!-- html2pdf Library for High Quality PDF Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
+    <title>قارئ الروشتات والأوراق الطبية 🩺</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        body { 
-            background: radial-gradient(circle at top, #0f172a, #0b132b); 
-            color: #f8fafc; 
-            font-family: system-ui, -apple-system, sans-serif; 
-            min-height: 100vh; 
-            padding: 25px 12px; 
-        }
-        .main-card { 
-            background: rgba(30, 41, 59, 0.95); 
-            border: 1px solid rgba(56, 189, 248, 0.3); 
-            border-radius: 20px; 
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); 
-            padding: 25px 18px; 
-        }
-        .section-box {
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 18px;
-        }
-        .form-control { 
-            background-color: #1e293b; 
-            border-color: #475569; 
-            color: #f8fafc; 
-            border-radius: 10px;
-        }
-        .form-control:focus { 
-            background-color: #1e293b; 
-            color: #fff; 
-            border-color: #38bdf8; 
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); 
-        }
-        .log-box { 
-            background: #020617; 
-            border-radius: 10px; 
-            font-family: monospace; 
-            font-size: 0.85rem; 
-            max-height: 200px; 
-            overflow-y: auto; 
-            padding: 12px; 
-            color: #38bdf8; 
-            text-align: right; 
-            direction: rtl; 
-            border: 1px solid #1e293b;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-        .btn-luxury {
-            background: linear-gradient(135deg, #0284c7, #0369a1);
-            color: #fff;
-            border: none;
-            font-weight: bold;
-            border-radius: 12px;
-            padding: 16px;
-            font-size: 1.15rem;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            width: 100%;
-            display: block;
-        }
-        .btn-luxury:active {
-            transform: scale(0.98);
-            opacity: 0.9;
-        }
-        .btn-luxury:disabled {
-            background: #334155 !important;
-            color: #94a3b8 !important;
-            cursor: not-allowed;
-        }
-
-        /* STYLES FOR GENERATED ACADEMIC PDF DOCUMENT */
-        #pdfRenderArea {
-            display: none;
-            background-color: #ffffff;
-            color: #0f172a;
-            padding: 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            direction: rtl;
-        }
-        .pdf-header {
-            border-bottom: 3px solid #0284c7;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .pdf-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #0369a1;
-            margin: 0;
-        }
-        .pdf-subtitle {
-            font-size: 13px;
-            color: #64748b;
-            margin-top: 4px;
-        }
-        .pdf-badge {
-            background-color: #0284c7;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+        body { font-family: 'Cairo', sans-serif; }
         
-        .qa-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        #outputContent h2 { 
+            font-size: 1.3rem; 
+            font-weight: 800; 
+            color: #38bdf8; 
+            border-right: 4px solid #0284c7; 
+            padding-right: 0.75rem; 
+            margin-top: 1.5rem; 
+            margin-bottom: 0.75rem; 
         }
-        .qa-card {
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 10px 14px;
-            background-color: #f8fafc;
-            page-break-inside: avoid;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .question-title {
-            font-size: 14px;
-            font-weight: bold;
-            color: #0f172a;
+        #outputContent h3 { 
+            font-size: 1.15rem; 
+            font-weight: 700; 
+            color: #34d399; 
+            margin-top: 1.25rem; 
+            margin-bottom: 0.5rem; 
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-bottom: 6px;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            background: #1e293b;
+            padding: 0.6rem 0.8rem;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
         }
-        .q-number {
-            background-color: #0f172a;
-            color: #38bdf8;
-            border-radius: 4px;
-            padding: 2px 7px;
-            font-size: 12px;
+        #outputContent ul { list-style-type: disc; padding-right: 1.5rem; margin-bottom: 1rem; }
+        #outputContent li { margin-bottom: 0.4rem; line-height: 1.8; }
+        #outputContent strong { color: #facc15; font-weight: 700; }
+        #outputContent table { width: 100%; border-collapse: collapse; margin: 1rem 0; background: #0f172a; border-radius: 0.75rem; overflow: hidden; }
+        #outputContent th, #outputContent td { border: 1px solid #334155; padding: 0.75rem; text-align: right; }
+        #outputContent th { background: #1e293b; color: #38bdf8; font-weight: 700; }
+        .img-link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background-color: #0284c7;
+            color: #ffffff !important;
+            padding: 0.3rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
         }
-        .answer-box {
-            font-size: 13px;
-            color: #1e293b;
-            line-height: 1.5;
-            background-color: #ffffff;
-            border-right: 3px solid #10b981;
-            padding: 8px 12px;
-            border-radius: 4px;
-            margin-top: 4px;
-        }
-        .key-term {
-            display: inline-block;
-            background-color: #fef3c7;
-            color: #92400e;
-            font-size: 11px;
-            font-weight: bold;
-            padding: 1px 6px;
-            border-radius: 4px;
-            margin-left: 4px;
+        .img-link-btn:hover {
+            background-color: #0369a1;
+            transform: translateY(-1px);
         }
     </style>
 </head>
-<body>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between p-4 md:p-8">
 
-<div class="container" style="max-width: 850px;">
-    <div class="main-card">
-        
-        <!-- Header -->
-        <div class="text-center mb-4">
-            <span class="badge bg-info text-dark px-3 py-2 fw-bold rounded-pill mb-2">⚡ Termo Academic PDF Pro 4.0</span>
-            <h2 class="fw-bold" style="color: #38bdf8;">📄 صانع المراجعات الأكاديمية (PDF)</h2>
-            <p class="text-slate-400 small mb-0">تحويل المحاضرات والـ PDF والروشتات إلى ملف Q&A مختصر وفاخر بأقل عدد صفحات</p>
-        </div>
+    <header class="max-w-4xl mx-auto w-full text-center my-4">
+        <h1 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight mb-2">
+            فك شفرة الأوراق والروشتات الطبية 🩺
+        </h1>
+        <p class="text-slate-400 text-sm md:text-base max-w-xl mx-auto">
+            قراءة شاملة فائقة الدقة لأي ورقة أدوية (عربي/إنجليزي) ومطابقتها بالسوق مع إمكانية معاينة صور الدواء.
+        </p>
+    </header>
 
-        <!-- API Key -->
-        <div class="mb-4">
-            <label class="form-label text-warning small fw-bold">🔑 Gemini API Key:</label>
-            <input type="password" id="apiKeyInput" class="form-control" placeholder="أدخل مفتاح AIzaSy..." oninput="window.saveApiKey()">
-        </div>
+    <main class="max-w-4xl mx-auto w-full space-y-6">
 
-        <!-- Section 1: Text -->
-        <div class="section-box">
-            <h6 class="fw-bold text-info mb-2">✍️ 1. كتابة أو نسخ نص المحاضرة (اختياري):</h6>
-            <textarea id="rawTextInput" class="form-control" rows="3" placeholder="الصق أسئلة، ملخصات، أو نص المحاضرة هنا..."></textarea>
-        </div>
-
-        <!-- Section 2: Files -->
-        <div class="section-box">
-            <h6 class="fw-bold text-info mb-2">📂 2. رفع الملفات (PDF / صور روشتات ومستندات / TXT):</h6>
-            <input type="file" id="fileInput" accept="image/*,application/pdf,.txt" multiple class="form-control mb-2" onchange="window.showSelectedFiles(this.files)">
-            <div id="fileListNotice" class="small text-warning fw-bold"></div>
-        </div>
-
-        <!-- Submit Button explicitly defined as type="button" and window.startProcess() -->
-        <button type="button" id="processBtn" onclick="window.startProcess()" class="btn-luxury mb-3">
-            🚀 تحليل الملفات وإنشاء ملخص PDF فاخر (سؤال وجواب)
-        </button>
-
-        <!-- Progress Bar -->
-        <div id="progressSection" style="display:none;" class="mb-3">
-            <div class="d-flex justify-content-between small text-slate-300 mb-1">
-                <span id="progressText">جاري المعالجة...</span>
-                <span id="progressPercent">0%</span>
-            </div>
-            <div class="progress" style="height: 12px; background-color: #0f172a; border-radius: 6px;">
-                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: 0%"></div>
-            </div>
-        </div>
-
-        <!-- Logs Box -->
-        <div id="logBox" class="log-box mb-3" style="display:none;"></div>
-
-        <!-- Preview & Download Section -->
-        <div id="downloadActionArea" style="display:none;" class="p-3 bg-dark rounded border border-info text-center">
-            <h5 class="text-success fw-bold mb-2">✅ تم تجهيز ملخص الـ PDF بنجاح!</h5>
-            <p class="text-light small mb-3">يمكنك معاينة المستند بالأسفل أو تنزيله مباشرة على جهازك.</p>
-            <button type="button" onclick="window.downloadPDF()" class="btn btn-success fw-bold px-4 py-2 me-2">
-                📥 تنزيل ملف الـ PDF مباشرة
-            </button>
-            <button type="button" onclick="window.print()" class="btn btn-outline-light fw-bold px-4 py-2">
-                🖨️ طباعة المستند
-            </button>
-        </div>
-
-    </div>
-</div>
-
-<!-- CONTAINER FOR PDF RENDERING -->
-<div class="container mt-4" style="max-width: 850px;">
-    <div id="pdfRenderArea">
-        <div class="pdf-header">
-            <div>
-                <h1 class="pdf-title" id="pdfDocTitle">ملخص المراجعة الأكاديمية</h1>
-                <div class="pdf-subtitle" id="pdfDocSubtitle">تنسيق مدمج - سؤال وجواب</div>
-            </div>
-            <div class="pdf-badge">Termo Academic PDF</div>
-        </div>
-
-        <div id="pdfContentList" class="qa-container">
-            <!-- Dynamic Q&A Cards -->
-        </div>
-    </div>
-</div>
-
-<script>
-    const GEMINI_MODELS = [
-        'gemini-3.6-flash',
-        'gemini-2.5-flash',
-        'gemini-1.5-flash'
-    ];
-
-    let generatedJsonData = null;
-
-    // Attach all core functions directly to window object
-    window.saveApiKey = function() {
-        const input = document.getElementById('apiKeyInput');
-        if (input) {
-            localStorage.setItem('termo_gemini_key', input.value.trim());
-        }
-    };
-
-    window.logMessage = function(msg, isError = false) {
-        const logBox = document.getElementById('logBox');
-        if (!logBox) return;
-        logBox.style.display = 'block';
-        const color = isError ? '#f87171' : '#38bdf8';
-        const time = new Date().toLocaleTimeString('ar-EG');
-        logBox.innerHTML += `<div style="color: ${color}">[${time}] ${msg}</div>`;
-        logBox.scrollTop = logBox.scrollHeight;
-    };
-
-    window.updateProgress = function(text, percent) {
-        const sec = document.getElementById('progressSection');
-        if (sec) sec.style.display = 'block';
-        
-        const txt = document.getElementById('progressText');
-        if (txt) txt.innerText = text;
-
-        const prc = document.getElementById('progressPercent');
-        if (prc) prc.innerText = `${percent}%`;
-
-        const bar = document.getElementById('progressBar');
-        if (bar) bar.style.width = `${percent}%`;
-    };
-
-    window.showSelectedFiles = function(files) {
-        const notice = document.getElementById('fileListNotice');
-        if (!notice) return;
-        if (files && files.length > 0) {
-            let names = Array.from(files).map(f => f.name).join(', ');
-            notice.innerText = `📁 تم اختيار (${files.length}) ملف: ${names}`;
-        } else {
-            notice.innerText = '';
-        }
-    };
-
-    function fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                const base64 = reader.result.split(',')[1];
-                resolve(base64);
-            };
-            reader.onerror = () => reject(new Error("فشل قراءة الملف من الجهاز"));
-            reader.readAsDataURL(file);
-        });
-    }
-
-    function readTextFile(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = () => reject(new Error("فشل قراءة الملف النصي"));
-            reader.readAsText(file);
-        });
-    }
-
-    async function callGeminiApiWithFallback(apiKey, partsPayload) {
-        let lastError = null;
-
-        for (const model of GEMINI_MODELS) {
-            window.logMessage(`🤖 جاري الاتصال بالنموذج الذكي (${model})...`);
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-7 shadow-xl space-y-5">
             
-            const bodyData = {
-                contents: [{ parts: partsPayload }],
+            <!-- خانة إدخال مفتاح الـ API -->
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                <label for="apiKeyInput" class="block text-xs font-bold text-slate-300 flex items-center justify-between">
+                    <span>🔑 مفتاح API الخاص بك (Gemini API Key):</span>
+                    <span class="text-[10px] text-emerald-400 font-normal">يُحفظ تلقائياً في متصفحك</span>
+                </label>
+                <div class="relative">
+                    <input type="password" id="apiKeyInput" oninput="saveApiKey()" placeholder="أدخل مفتاح AIzaSy الخاص بك..." class="w-full bg-slate-900 border border-slate-700 rounded-lg py-2 px-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono tracking-wider pl-10">
+                    <button type="button" onclick="toggleKeyVisibility()" class="absolute left-3 top-2.5 text-slate-400 hover:text-slate-200 text-xs">
+                        <i id="keyVisibilityIcon" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="rxInputSection" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label for="cameraInput" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold py-4 px-4 rounded-xl text-center flex flex-col items-center justify-center gap-1.5 transition border border-emerald-400/30 shadow-md cursor-pointer select-none">
+                        <i class="fa-solid fa-camera text-2xl"></i>
+                        <span class="text-sm">تصوير الورقة مباشرة 📷</span>
+                        <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="handleImageSelect(event)" class="hidden">
+                    </label>
+
+                    <label for="galleryInput" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold py-4 px-4 rounded-xl text-center flex flex-col items-center justify-center gap-1.5 transition border border-slate-700 shadow-md cursor-pointer select-none">
+                        <i class="fa-solid fa-images text-2xl text-blue-400"></i>
+                        <span class="text-sm">اختيار صورة من المعرض 🖼️</span>
+                        <input type="file" id="galleryInput" accept="image/*" onchange="handleImageSelect(event)" class="hidden">
+                    </label>
+                </div>
+
+                <div id="imagePreviewContainer" class="hidden text-center space-y-2 bg-slate-950 p-3 rounded-xl border border-slate-800 overflow-hidden">
+                    <img id="imagePreview" src="" class="max-h-80 mx-auto rounded-lg object-contain shadow-md border border-slate-800">
+                    <p id="imageStatus" class="text-xs text-emerald-400 font-bold">جاهزية الصورة للتحليل ⚡</p>
+                </div>
+            </div>
+
+            <button id="processBtn" onclick="processPrescription()" class="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold py-3.5 px-6 rounded-xl transition duration-150 flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 text-sm cursor-pointer select-none">
+                <i class="fa-solid fa-microscope text-xl"></i>
+                <span>قراءة وفحص عالي الدقة</span>
+            </button>
+        </div>
+
+        <div id="loading" class="hidden text-center py-6 space-y-2">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent"></div>
+            <p id="loadingText" class="text-slate-400 text-xs font-semibold animate-pulse">جاري فحص الحروف بدقة صيدلانية فائقة وتدقيق الأصناف المكتوبة...</p>
+        </div>
+
+        <div id="outputContainer" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 id="resultHeader" class="text-base font-bold text-emerald-400 flex items-center gap-2 border-0 bg-transparent p-0 m-0">
+                    <i class="fa-solid fa-file-medical text-lg"></i> النتيجة الصيدلانية المعتمدة
+                </h3>
+                <button onclick="copyResult()" class="text-xs bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 py-1.5 px-3 rounded-lg border border-slate-700 transition flex items-center gap-1 cursor-pointer select-none">
+                    <i class="fa-solid fa-copy"></i> نسخ النتيجة
+                </button>
+            </div>
+            <div id="outputContent" class="text-slate-300 text-xs md:text-sm leading-relaxed"></div>
+        </div>
+
+    </main>
+
+    <footer class="text-center text-slate-600 text-xs my-6">
+        تنبيه: هذا التطبيق لأغراض تعليمية ومساعدة العمل بالصيدلية. يرجى دائماً المراجعة الدقيقة قبل صرف الدواء.
+    </footer>
+
+    <script>
+        const MODEL_NAME = "gemini-3.6-flash";
+        const DEFAULT_API_KEY = "AIzaSyD27DPVo13eAUyI7et0gSDx0Vv9a5q2LYU"; 
+        
+        let compressedImageBase64 = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedKey = localStorage.getItem('user_gemini_api_key');
+            const keyInput = document.getElementById('apiKeyInput');
+            if (savedKey && savedKey.trim() !== "") {
+                keyInput.value = savedKey;
+            } else {
+                keyInput.value = DEFAULT_API_KEY;
+            }
+        });
+
+        function saveApiKey() {
+            const keyInput = document.getElementById('apiKeyInput').value.trim();
+            localStorage.setItem('user_gemini_api_key', keyInput);
+        }
+
+        function toggleKeyVisibility() {
+            const keyInput = document.getElementById('apiKeyInput');
+            const icon = document.getElementById('keyVisibilityIcon');
+            if (keyInput.type === "password") {
+                keyInput.type = "text";
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                keyInput.type = "password";
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function handleImageSelect(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            const previewImg = document.getElementById('imagePreview');
+            const statusText = document.getElementById('imageStatus');
+
+            previewContainer.classList.remove('hidden');
+            statusText.innerText = "جاري تحسين وضوح الصورة وتجهيز حواف الخط...";
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function () {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const maxDim = 1800;
+
+                    if (width > height && width > maxDim) {
+                        height = Math.round((height * maxDim) / width);
+                        width = maxDim;
+                    } else if (height > maxDim) {
+                        width = Math.round((width * maxDim) / height);
+                        height = maxDim;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+                    compressedImageBase64 = dataUrl.split(',')[1];
+                    previewImg.src = dataUrl;
+                    statusText.innerText = "تم رفع الصورة بنجاح وجاهزة للتحليل ⚡";
+                };
+                img.onerror = function() {
+                    alert("تعذر تحميل الصورة، جرب صورة أخرى.");
+                };
+                img.src = e.target.result;
+            };
+            reader.onerror = function() {
+                alert("تعذر قراءة ملف الصورة من الجهاز.");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function fetchWithAutoRetry(url, options, maxRetries = 3) {
+            const loadingText = document.getElementById('loadingText');
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                const response = await fetch(url, options);
+                
+                if (response.status === 429 && attempt < maxRetries) {
+                    loadingText.innerText = `السيرفر مشغول حالياً بطلبات متتالية، جاري الانتظار تلقائياً وإعادة المحاولة (${attempt}/${maxRetries})... ⏳`;
+                    await new Promise(resolve => setTimeout(resolve, 12000));
+                    loadingText.innerText = "جاري إعادة الفحص والمطابقة الصيدلانية...";
+                    continue;
+                }
+                return response;
+            }
+        }
+
+        async function processPrescription() {
+            const activeApiKey = document.getElementById('apiKeyInput').value.trim();
+
+            if (!activeApiKey) {
+                alert("برجاء أدخل مفتاح API في الخانة المخصصة بالأعلى أولاً!");
+                return;
+            }
+
+            if (!compressedImageBase64) {
+                alert("برجاء اختيار صورة أو التقاطها بالكاميرا أولاً!");
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const loadingText = document.getElementById('loadingText');
+            const outputContainer = document.getElementById('outputContainer');
+            const outputContent = document.getElementById('outputContent');
+
+            loadingText.innerText = "جاري فحص الحروف بدقة صيدلانية فائقة وتدقيق الأصناف المكتوبة والمطابقة مع قواعد البيانات...";
+            loading.classList.remove('hidden');
+            outputContainer.classList.add('hidden');
+
+            const systemPrompt = `You are a Senior Expert Clinical Pharmacist with decades of experience and an ultra-precise Medical OCR AI engine.
+
+CRITICAL MANDATORY OCR & PHARMACEUTICAL RULES:
+
+1. ABSOLUTE LETTER ACCURACY & VISUAL FIDELITY:
+   - Microscopically inspect every letter stroke, ascender, and descender.
+   - RESPECT VISIBLE DISTINCT LETTERS STRICTLY:
+     * If the descender letter 'p' is visible (e.g. in "Doliprane", "Dolipran", "Panadol", "Plavix", "Prospan"), NEVER ignore or substitute 'p' with 'b' or invent a non-existent brand name like "dolibran".
+     * Differentiate: 'p' vs 'b', 'd' vs 'cl', 't' vs 'l', 'Cef' vs 'Alpha', 'Ezacard' vs 'ezasa'.
+
+2. MANDATORY REAL DRUG MAPPING & PHONETIC CORRECTION (ZERO PSEUDO-NAMES / ZERO HALLUCINATIONS):
+   - ABSOLUTELY FORBIDDEN to output non-existent, typos, or fake phonetic words (e.g. NEVER output "ezasa", "dolibran", "cefotac", "alphintren").
+   - IF OCR generates a string that does NOT exist in registered drug databases (like Egyptian Drug Authority EDA / Global FDA catalogs), YOU MUST IMMEDIATELY CROSS-CHECK & CORRECT IT to the real registered commercial trade name that matches the handwriting pattern and dosage context.
+     * Example: If handwritten strokes look like "ezasa" or "Eza-card", map it to the REAL registered drug "Ezacard" (or "Ezetrol" / "Ezasmart" depending on strength/context).
+     * Example: If handwritten strokes look like "Dolipran" / "Doliprane", output "Doliprane" with 'p'.
+   - Every identified drug MUST be an EXACT real registered product available in pharmacies.
+
+3. CONTEXTUAL TRIANGULATION (READ NEXT TO & BELOW EACH ITEM):
+   - For EVERY medication line, inspect:
+     a) Handwritten trade name letters.
+     b) Numbers, strengths, or dosage forms beside the name ("75mg", "1000mg", "500mg", "Vial", "Tab").
+     c) Handwritten instructions directly underneath ("قرص يومياً", "قرص بعد الأكل", "قرص كل 8 ساعات").
+   - COMBINE these 3 data points to confirm the EXACT REAL REGISTERED DRUG (e.g., "Ezacard 75mg Tab" for blood thinner/aspirin).
+
+4. BALANCED & COMPLETE SCANNING (TOP TO BOTTOM):
+   - Process ALL items written on the sheet sequentially from top to bottom without skipping a single line.
+
+STRICT OUTPUT RULES:
+- In each medication header (###), include an HTML link button to view real images of the drug package on Google Images formatted exactly as:
+  <a href="https://www.google.com/search?tbm=isch&q=[EXACT_CORRECT_ENGLISH_DRUG_NAME]+[STRENGTH]" target="_blank" class="img-link-btn"><i class="fa-solid fa-image"></i> عرض صور المنتج 🖼️</a>
+
+- Output ONLY clean structured Arabic Markdown strictly matching this structure:
+
+## 📋 المستحضرات والأدوية المكتوبة بالورقة/الروشتة (كاملة):
+
+### 1. [اسم الدواء الصحيح المسجل بالإنجليزية والعربية] <a href="https://www.google.com/search?tbm=isch&q=[EXACT_ENGLISH_DRUG_NAME]" target="_blank" class="img-link-btn"><i class="fa-solid fa-image"></i> عرض صور المنتج 🖼️</a>
+* **نوع المستحضر:** [مستورد / محلي]
+* **الشكل الدوائي والتركيز:** ...
+* **المادة الفعالة / المكونات:** ...
+* **الجرعة/التعليمات المكتوبة:** ...
+* **دواعي الاستعمال:** ...
+* **البدائل بالسوق المصري:** ...
+
+### 2. [اسم الدواء الثاني الصحيح المسجل] <a href="https://www.google.com/search?tbm=isch&q=[EXACT_ENGLISH_DRUG_NAME]" target="_blank" class="img-link-btn"><i class="fa-solid fa-image"></i> عرض صور المنتج 🖼️</a>
+* **نوع المستحضر:** ...
+* **الشكل الدوائي والتركيز:** ...
+* **المادة الفعالة / المكونات:** ...
+* **الجرعة/التعليمات المكتوبة:** ...
+* **دواعي الاستعمال:** ...
+* **البدائل بالسوق المصري:** ...
+
+(استمر بنفس النمط لكل العناصر دون استثناء صنف واحد)
+
+## ⚠️ إرشادات وملاحظات صيدلانية:
+(أي تعارضات، تنبيهات، أو ملاحظات خاصة بالاستخدام)`;
+
+            const requestData = {
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+                contents: [{
+                    parts: [
+                        { inlineData: { mimeType: 'image/jpeg', data: compressedImageBase64 } },
+                        { text: "اقرأ الورقة بالكامل بدقة صيدلي خبير. يمنع منعاً باتاً كِتابة أسماء وهمية مثل ezasa بل يجب مطابقتها وتصحيحها فوراً للاسم التجاري الحقيقي المسجل في الصيدليات (مثل Ezacard)، مع الحفاظ على دقة الحروف مثل p في Doliprane والمسح الكامل لجميع الأصناف." }
+                    ]
+                }],
                 generationConfig: {
-                    response_mime_type: "application/json"
+                    temperature: 0.05,
+                    maxOutputTokens: 4096
                 }
             };
 
             try {
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bodyData)
-                });
+                const response = await fetchWithAutoRetry(
+                    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${activeApiKey}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestData)
+                    }
+                );
 
-                if (res.ok) {
-                    const data = await res.json();
-                    const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (resultText) return resultText;
-                } else {
-                    const errData = await res.json().catch(() => ({}));
-                    const errMsg = errData.error?.message || `Status ${res.status}`;
-                    window.logMessage(`⚠️ النموذج ${model} أعاد خطأ: ${errMsg}`);
-                    lastError = new Error(errMsg);
+                const data = await response.json();
+
+                if (response.ok && data.candidates && data.candidates[0] && data.candidates[0].content) {
+                    const rawMarkdown = data.candidates[0].content.parts[0].text;
+                    outputContent.innerHTML = window.marked ? marked.parse(rawMarkdown) : rawMarkdown;
+                    outputContainer.classList.remove('hidden');
+                } else if (data.error) {
+                    alert("خطأ من السيرفر:\n" + data.error.message);
                 }
             } catch (err) {
-                window.logMessage(`⚠️ تعذر الاتصال بـ ${model}: ${err.message}`);
-                lastError = err;
+                alert("خطأ اتصال: " + err.message);
             }
+
+            loading.classList.add('hidden');
         }
-        throw lastError || new Error("فشلت جميع محاولات الاتصال بالذكاء الاصطناعي.");
-    }
 
-    // Main execution method attached globally
-    window.startProcess = async function() {
-        const btn = document.getElementById('processBtn');
-        const downloadArea = document.getElementById('downloadActionArea');
-        if (downloadArea) downloadArea.style.display = 'none';
-
-        try {
-            const apiKeyInput = document.getElementById('apiKeyInput');
-            const apiKey = apiKeyInput ? apiKeyInput.value.trim() : '';
-
-            if (!apiKey) {
-                alert("⚠️ يرجى إدخال مفتاح Gemini API Key أولاً في الحقل المخصص!");
-                if (apiKeyInput) apiKeyInput.focus();
-                return;
-            }
-
-            const rawTextInput = document.getElementById('rawTextInput');
-            const pastedText = rawTextInput ? rawTextInput.value.trim() : '';
-            
-            const fileInput = document.getElementById('fileInput');
-            const files = fileInput ? fileInput.files : null;
-
-            if (!pastedText && (!files || files.length === 0)) {
-                alert("⚠️ يرجى اختيار ملف (PDF/صورة) أو كتابة نص المحاضرة للبدء!");
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerText = "⏳ جاري المعالجة... يرجى الانتظار";
-            
-            const logBox = document.getElementById('logBox');
-            if (logBox) logBox.innerHTML = '';
-            
-            window.logMessage("🚀 بدء عملية الاستخراج والتحليل الأكاديمي...");
-            window.updateProgress("جاري تجهيز وقراءة الملفات والمدخلات...", 15);
-
-            const partsPayload = [];
-
-            const systemPrompt = `You are a top-tier medical and academic professor specialized in summarizing complex lectures into concise, high-yield Question & Answer (Q&A) study guides.
-
-Analyze all attached materials (PDFs, images, handwritten notes, text) and generate a comprehensive yet extremely concise Q&A summary to save document pages.
-
-Return ONLY a valid JSON object matching this exact schema without markdown wrap:
-{
-  "doc_title": "عنوان المحاضرة الرئيسي",
-  "doc_subtitle": "الوحدة / اسم المادة - ملخص شفرة الامتحان",
-  "qa_items": [
-    {
-      "id": 1,
-      "question": "السؤال أو المفهوم الأساسي بشكل المباشر؟",
-      "answer": "الإجابة النموذجية المباشرة والدقيقة الشاملة بدون رغ زائد.",
-      "keywords": ["الكلمة المفتاحية 1", "ملاحظة هامة"]
-    }
-  ]
-}`;
-
-            partsPayload.push({ text: systemPrompt });
-
-            if (pastedText) {
-                partsPayload.push({ text: `[النص المكتوب]:\n${pastedText}` });
-            }
-
-            if (files && files.length > 0) {
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    window.logMessage(`📂 قراءة الملف (${i + 1} من ${files.length}): ${file.name}...`);
-
-                    if (file.size > 19 * 1024 * 1024) {
-                        throw new Error(`الملف ${file.name} حجمه كبير جداً (أكبر من 19MB).`);
-                    }
-
-                    if (file.type === "application/pdf" || file.name.endsWith('.pdf')) {
-                        window.logMessage(`📄 جاري تحويل وقراءة ملف PDF المباشر (${file.name})...`);
-                        const base64Data = await fileToBase64(file);
-                        partsPayload.push({
-                            inline_data: {
-                                mime_type: "application/pdf",
-                                data: base64Data
-                            }
-                        });
-                        window.logMessage(`✅ تم إرفاق ملف PDF بنجاح (${(file.size / (1024*1024)).toFixed(2)} MB)`);
-                    } 
-                    else if (file.type.startsWith("image/")) {
-                        window.logMessage(`🖼️ جاري تجهيز الصورة (${file.name})...`);
-                        const base64Data = await fileToBase64(file);
-                        partsPayload.push({
-                            inline_data: {
-                                mime_type: file.type || "image/jpeg",
-                                data: base64Data
-                            }
-                        });
-                        window.logMessage(`✅ تم إرفاق الصورة بنجاح`);
-                    } 
-                    else {
-                        window.logMessage(`📝 جاري قراءة الملف النصي (${file.name})...`);
-                        const txtContent = await readTextFile(file);
-                        partsPayload.push({ text: `[محتوى ملف ${file.name}]:\n${txtContent}` });
-                    }
-                }
-            }
-
-            window.updateProgress("جاري استخراج الأسئلة والإجابات عبر الذكاء الاصطناعي...", 50);
-            window.logMessage("🧠 إرسال المحتوى إلى Gemini لاستخراج الأسئلة النموذجية...");
-
-            const rawJsonStr = await callGeminiApiWithFallback(apiKey, partsPayload);
-            window.logMessage("✨ تم استلام الرد وتحليل البيانات بنجاح!");
-
-            const cleanedStr = rawJsonStr.replace(/```json/gi, '').replace(/```/g, '').trim();
-            generatedJsonData = JSON.parse(cleanedStr);
-
-            window.logMessage(`📊 تم تكوين (${generatedJsonData.qa_items ? generatedJsonData.qa_items.length : 0}) سؤال وإجابة بنجاح.`);
-            window.updateProgress("جاري بناء وتنسيق مستند الـ PDF الفاخر...", 85);
-
-            window.renderPdfPreview(generatedJsonData);
-
-            window.updateProgress("اكتملت العملية بنجاح! 100%", 100);
-            window.logMessage("🎉 المستند جاهز للتحميل والمعاينة الآن!");
-            
-            if (downloadArea) downloadArea.style.display = 'block';
-
-        } catch (err) {
-            window.logMessage(`❌ خطأ: ${err.message}`, true);
-            alert(`⚠️ حدث خطأ أثناء المعالجة:\n${err.message}`);
-        } finally {
-            if (btn) {
-                btn.disabled = false;
-                btn.innerText = "🚀 تحليل الملفات وإنشاء ملخص PDF فاخر (سؤال وجواب)";
-            }
+        function copyResult() {
+            const text = document.getElementById('outputContent').innerText;
+            navigator.clipboard.writeText(text);
+            alert("تم نسخ النتيجة بنجاح!");
         }
-    };
-
-    window.renderPdfPreview = function(data) {
-        document.getElementById('pdfDocTitle').innerText = data.doc_title || "ملخص المراجعة الأكاديمية";
-        document.getElementById('pdfDocSubtitle').innerText = data.doc_subtitle || "سؤال وجواب - مراجعة مركزة";
-
-        const listContainer = document.getElementById('pdfContentList');
-        listContainer.innerHTML = '';
-
-        const items = data.qa_items || [];
-        items.forEach((item, index) => {
-            let keywordsHtml = '';
-            if (item.keywords && item.keywords.length > 0) {
-                keywordsHtml = `<div class="mt-1">` + 
-                    item.keywords.map(k => `<span class="key-term">📌 ${k}</span>`).join(' ') + 
-                    `</div>`;
-            }
-
-            const cardHtml = `
-                <div class="qa-card">
-                    <div class="question-title">
-                        <span class="q-number">س ${item.id
+    </script>
+</body>
+</html>
