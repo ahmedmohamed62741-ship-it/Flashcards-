@@ -83,7 +83,7 @@
                     <span class="text-[10px] text-emerald-400 font-normal">يُحفظ تلقائياً في متصفحك</span>
                 </label>
                 <div class="relative">
-                    <input type="password" id="apiKeyInput" oninput="saveApiKey()" placeholder="أدخل مفتاح AIzaSy الخاص بك..." class="w-full bg-slate-900 border border-slate-700 rounded-lg py-2 px-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono tracking-wider pl-10">
+                    <input type="password" id="apiKeyInput" oninput="saveApiKey()" placeholder="أدخل مفتاح AQ. الخاص بك..." class="w-full bg-slate-900 border border-slate-700 rounded-lg py-2 px-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono tracking-wider pl-10">
                     <button type="button" onclick="toggleKeyVisibility()" class="absolute left-3 top-2.5 text-slate-400 hover:text-slate-200 text-xs">
                         <i id="keyVisibilityIcon" class="fa-solid fa-eye"></i>
                     </button>
@@ -142,7 +142,7 @@
 
     <script>
         const MODEL_NAME = "gemini-3.6-flash";
-        const DEFAULT_API_KEY = "AIzaSyD27DPVo13eAUyI7et0gSDx0Vv9a5q2LYU"; 
+        const DEFAULT_API_KEY = ""; 
         
         let compressedImageBase64 = null;
 
@@ -151,7 +151,7 @@
             const keyInput = document.getElementById('apiKeyInput');
             if (savedKey && savedKey.trim() !== "") {
                 keyInput.value = savedKey;
-            } else {
+            } else if (DEFAULT_API_KEY) {
                 keyInput.value = DEFAULT_API_KEY;
             }
         });
@@ -334,11 +334,16 @@ STRICT OUTPUT RULES:
             };
 
             try {
+                // تعديل طريقة إرسال المفتاح ليدعم مفاتيح AQ. الجديدة في الـ HTTP Headers وتجنب استخدام ?key= في الـ URL
                 const response = await fetchWithAutoRetry(
-                    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${activeApiKey}`,
+                    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`,
                     {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${activeApiKey}`,
+                            'x-goog-api-key': activeApiKey
+                        },
                         body: JSON.stringify(requestData)
                     }
                 );
@@ -366,4 +371,4 @@ STRICT OUTPUT RULES:
         }
     </script>
 </body>
-</html>
+                        </html>
