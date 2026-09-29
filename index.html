@@ -119,7 +119,7 @@
 
         <div id="loading" class="hidden text-center py-6 space-y-2">
             <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent"></div>
-            <p id="loadingText" class="text-slate-400 text-xs font-semibold animate-pulse">جاري فحص الحروف بدقة صيدلانية فائقة وتدقيق الأصناف المكتوبة...</p>
+            <p id="loadingText" class="text-slate-400 text-xs font-semibold animate-pulse">جاري الفحص الصيدلاني فائق السرعة...</p>
         </div>
 
         <div id="outputContainer" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
@@ -184,7 +184,7 @@
             const statusText = document.getElementById('imageStatus');
 
             previewContainer.classList.remove('hidden');
-            statusText.innerText = "جاري تحسين وضوح الصورة وتجهيز حواف الخط...";
+            statusText.innerText = "جاري معالجة الصورة...";
 
             const reader = new FileReader();
             reader.onload = function (e) {
@@ -193,7 +193,7 @@
                     const canvas = document.createElement('canvas');
                     let width = img.width;
                     let height = img.height;
-                    const maxDim = 1800;
+                    const maxDim = 1200; // تقليص الأبعاد قليلاً لتسريع الضغط والرفع
 
                     if (width > height && width > maxDim) {
                         height = Math.round((height * maxDim) / width);
@@ -208,39 +208,29 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.85); // تقليل طفيف لنسبة الضغط لسرعة أسرع
                     compressedImageBase64 = dataUrl.split(',')[1];
                     previewImg.src = dataUrl;
-                    statusText.innerText = "تم رفع الصورة بنجاح وجاهزة للتحليل ⚡";
-                };
-                img.onerror = function() {
-                    alert("تعذر تحميل الصورة، جرب صورة أخرى.");
+                    statusText.innerText = "جاهز للفحص الفوري ⚡";
                 };
                 img.src = e.target.result;
-            };
-            reader.onerror = function() {
-                alert("تعذر قراءة ملف الصورة من الجهاز.");
             };
             reader.readAsDataURL(file);
         }
 
-        // نظام إعادة المحاولة التلقائي الذكي والخفي خلف الكواليس (بدون تدخل منك)
-        async function fetchWithAutoRetry(url, options, maxRetries = 4) {
-            const loadingText = document.getElementById('loadingText');
+        // إعادة محاولة سريعة وخفيفة جداً في الخلفية
+        async function fetchWithAutoRetry(url, options, maxRetries = 2) {
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
                     const response = await fetch(url, options);
-                    
-                    // إذا واجه ضغط مؤقت (429 أو 503)، يعيد المحاولة تلقائياً بانتظار قصير
                     if ((response.status === 429 || response.status === 503) && attempt < maxRetries) {
-                        loadingText.innerText = `السيرفر مشغول قليلاً، جاري إعادة المحاولة تلقائياً (${attempt}/${maxRetries})... ⏳`;
-                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        await new Promise(resolve => setTimeout(resolve, 1500)); // انتظار قصير جداً
                         continue;
                     }
                     return response;
                 } catch (err) {
                     if (attempt === maxRetries) throw err;
-                    await new Promise(resolve => setTimeout(resolve, 2500));
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
             }
         }
@@ -263,29 +253,25 @@
             const outputContainer = document.getElementById('outputContainer');
             const outputContent = document.getElementById('outputContent');
 
-            loadingText.innerText = "جاري الفحص الصيدلاني المتقدم ومطابقة الحروف والخطوط...";
+            loadingText.innerText = "جاري فحص الروشتة وإظهار النتائج فوراً...";
             loading.classList.remove('hidden');
             outputContainer.classList.add('hidden');
 
-            const systemPrompt = `You are an elite Senior Clinical Pharmacist with unmatched expertise in reading challenging doctor handwriting and an ultra-precise Medical OCR AI engine.
+            const systemPrompt = `You are an elite Senior Clinical Pharmacist with an ultra-precise Medical OCR AI engine.
 
-ABSOLUTE CLINICAL & PHARMACEUTICAL RULES (ZERO ERROR TOLERANCE):
-1. ZERO HALLUCINATIONS / NO PSEUDO-NAMES:
-   - It is strictly forbidden to invent, guess, or output non-existent words or phonetic typos (e.g. NEVER output fake names like "ezasa", "dolibran", "cefotac").
-   - Every single drug identified MUST be 100% a real, officially registered commercial trade name available in the pharmaceutical market (such as Ezacard, Doliprane, Augmentin, etc.).
-2. EXACT LETTER FIDELITY & STROKE ANALYSIS:
-   - Microscopically analyze every letter stroke. Pay extreme attention to distinguishing letters like 'p' vs 'b' (e.g., Doliprane must retain 'p'), 't' vs 'l', and specific medical abbreviations.
-3. CONTEXTUAL TRIANGULATION (NAME + STRENGTH + INSTRUCTIONS):
-   - For every medication line, correlate:
-     a) The handwritten trade name.
-     b) The accompanying strength/form (e.g., 75mg, 1GB, Tab, Vial).
-     c) The dosing frequency underneath (e.g., قرص يومياً، كل 8 ساعات).
-   - This ensures absolute accuracy in identifying the exact commercial product.
-4. COMPREHENSIVE SCANNING:
-   - Process all items from top to bottom completely without skipping any line or item.
+CRITICAL PHARMACEUTICAL & OCR RULES:
+1. ZERO HALLUCINATIONS / ABSOLUTE ACCURACY:
+   - Do NOT invent or output non-existent words (e.g., NEVER output fake words like "ezasa").
+   - Every identified item MUST be an exact, real, officially registered commercial trade name available in pharmacies (e.g., Ezacard, Doliprane, Augmentin).
+2. LETTER FIDELITY:
+   - Carefully analyze handwritten letters. Distinguish 'p' vs 'b' (e.g., Doliprane must have 'p').
+3. CONTEXTUAL TRIANGULATION:
+   - Combine trade name, strength/form (e.g., 75mg, Tab), and instructions underneath.
+4. COMPLETE SCANNING:
+   - Process all items from top to bottom completely.
 
 STRICT OUTPUT FORMAT RULES:
-- In each medication header (###), include an HTML link button to view real images of the drug package on Google Images formatted exactly as:
+- In each medication header (###), include an HTML link button:
   <a href="https://www.google.com/search?tbm=isch&q=[EXACT_CORRECT_ENGLISH_DRUG_NAME]+[STRENGTH]" target="_blank" class="img-link-btn"><i class="fa-solid fa-image"></i> عرض صور المنتج 🖼️</a>
 
 - Output ONLY clean structured Arabic Markdown strictly matching this structure:
@@ -300,18 +286,10 @@ STRICT OUTPUT FORMAT RULES:
 * **دواعي الاستعمال:** ...
 * **البدائل بالسوق المصري:** ...
 
-### 2. [اسم الدواء الثاني الصحيح المسجل] <a href="https://www.google.com/search?tbm=isch&q=[EXACT_ENGLISH_DRUG_NAME]" target="_blank" class="img-link-btn"><i class="fa-solid fa-image"></i> عرض صور المنتج 🖼️</a>
-* **نوع المستحضر:** ...
-* **الشكل الدوائي والتركيز:** ...
-* **المادة الفعالة / المكونات:** ...
-* **الجرعة/التعليمات المكتوبة:** ...
-* **دواعي الاستعمال:** ...
-* **البدائل بالسوق المصري:** ...
-
 (استمر بنفس النمط لكل العناصر دون استثناء صنف واحد)
 
 ## ⚠️ إرشادات وملاحظات صيدلانية:
-(أي تعارضات، تنبيهات، أو ملاحظات خاصة بالاستخدام)`;
+(أي تعارضات أو تنبيهات)`;
 
             const requestData = {
                 systemInstruction: {
@@ -320,12 +298,12 @@ STRICT OUTPUT FORMAT RULES:
                 contents: [{
                     parts: [
                         { inlineData: { mimeType: 'image/jpeg', data: compressedImageBase64 } },
-                        { text: "قم بقراءة الروشتة بخبرة صيدلي أخصائي. طابق كل حرف بدقة تامة مع الأسماء التجارية الحقيقية المسجلة وتجنب أي أسماء وهمية تماماً." }
+                        { text: "اقرأ الروشتة بسرعة ودقة صيدلانية تامة دون أي تأخير أو اختلاق." }
                     ]
                 }],
                 generationConfig: {
                     temperature: 0.0,
-                    maxOutputTokens: 4096
+                    maxOutputTokens: 2048 // تقليص التوكنز لتوليد الإجابة بسرد فائق السرعة
                 }
             };
 
@@ -349,7 +327,7 @@ STRICT OUTPUT FORMAT RULES:
                     alert("خطأ من السيرفر:\n" + data.error.message);
                 }
             } catch (err) {
-                alert("خطأ اتصال بالشبكة، يرجى المحاولة لاحقاً: " + err.message);
+                alert("خطأ اتصال بالشبكة: " + err.message);
             }
 
             loading.classList.add('hidden');
@@ -362,4 +340,4 @@ STRICT OUTPUT FORMAT RULES:
         }
     </script>
 </body>
-</html>
+    </html>
