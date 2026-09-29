@@ -76,7 +76,6 @@
 
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-7 shadow-xl space-y-5">
             
-            <!-- خانة إدخال مفاتيح الـ API (تدعم أكثر من مفتاح مفصول بفاصلة) -->
             <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
                 <label for="apiKeyInput" class="block text-xs font-bold text-slate-300 flex items-center justify-between">
                     <span>🔑 مفاتيح API (يمكنك وضع أكثر من مفتاح مفصول بفاصلة ,):</span>
@@ -172,7 +171,7 @@
                     const canvas = document.createElement('canvas');
                     let width = img.width;
                     let height = img.height;
-                    const maxDim = 1200; // حجم مثالي وسريع للتحميل والضغط
+                    const maxDim = 1200;
 
                     if (width > height && width > maxDim) {
                         height = Math.round((height * maxDim) / width);
@@ -197,7 +196,6 @@
             reader.readAsDataURL(file);
         }
 
-        // دالة الدوران التلقائي للمفاتيح لتجاوز الضغط والكوتا فوراً
         async function fetchWithKeyRotation(requestData) {
             const rawKeyInput = document.getElementById('apiKeyInput').value.trim();
             if (!rawKeyInput) {
@@ -228,7 +226,6 @@
 
                         const data = await response.json();
                         
-                        // إذا حدث تجاوز كوتا لهذا المفتاح، انتقل فوراً للمفتاح التالي
                         if (data.error && (data.error.code === 429 || data.error.status === "RESOURCE_EXHAUSTED")) {
                             break; 
                         }
@@ -258,7 +255,6 @@
             const outputContainer = document.getElementById('outputContainer');
             const outputContent = document.getElementById('outputContent');
 
-            // قفل الزر لمنع الطلبات المتكررة
             processBtn.disabled = true;
             processBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
@@ -268,26 +264,21 @@
 
             const systemPrompt = `You are an elite Senior Clinical Pharmacist with decades of field experience and an ultra-precise Medical OCR AI engine.
 
-CRITICAL PHARMACEUTICAL & OCR RULES:
-1. ZERO HALLUCINATIONS / ABSOLUTE ACCURACY:
-   - Do NOT invent, guess, or output non-existent words or fake phonetic terms.
-   - Every single identified item MUST be an exact, real, officially registered commercial trade name available in pharmacies (e.g., Ezacard, Doliprane, Augmentin).
-2. LETTER FIDELITY & STROKE ANALYSIS:
-   - Carefully analyze every handwritten letter and stroke. Distinguish 'p' vs 'b', 't' vs 'l', and medical symbols.
-3. CONTEXTUAL TRIANGULATION:
-   - For every medication line, combine:
-     a) Trade name.
-     b) Strength/form (e.g., 75mg, Tab, Vial).
-     c) Instructions underneath (e.g., قرص يومياً).
-   - This ensures the exact matching product.
-4. COMPLETE SCANNING:
-   - Process all items from top to bottom completely without skipping a single line.
+CRITICAL INSTRUCTIONS:
+- OUTPUT ABSOLUTELY NOTHING EXCEPT THE FINAL MARKDOWN RESPONSE.
+- DO NOT INCLUDE ANY THINKING PROCESS, REASONING STEPS, OR CONVERSATIONAL TEXT (e.g. DO NOT write "Let's re-check...").
+- START DIRECTLY WITH: ## 📋 المستحضرات والأدوية المكتوبة بالورقة/الروشتة (كاملة):
+
+PHARMACEUTICAL RULES:
+1. ZERO HALLUCINATIONS: Every identified item MUST be an exact, real, officially registered commercial trade name available in pharmacies (e.g., Ezacard, Doliprane, Augmentin).
+2. LETTER FIDELITY: Analyze handwritten letters carefully (e.g., 'p' vs 'b').
+3. COMPLETE SCANNING: Process all items from top to bottom completely without skipping.
 
 STRICT OUTPUT FORMAT RULES:
-- In each medication header (###), include an HTML link button to view real images of the drug package on Google Images formatted exactly as:
+- In each medication header (###), include an HTML link button formatted exactly as:
   <a href="https://www.google.com/search?tbm=isch&q=[EXACT_CORRECT_ENGLISH_DRUG_NAME]+[STRENGTH]" target="_blank" class="img-link-btn"><i class="fa-solid fa-image"></i> عرض صور المنتج 🖼️</a>
 
-- Output ONLY clean structured Arabic Markdown strictly matching this structure:
+- Use this exact Markdown structure:
 
 ## 📋 المستحضرات والأدوية المكتوبة بالورقة/الروشتة (كاملة):
 
@@ -299,18 +290,10 @@ STRICT OUTPUT FORMAT RULES:
 * **دواعي الاستعمال:** ...
 * **البدائل بالسوق المصري:** ...
 
-### 2. [اسم الدواء الثاني الصحيح المسجل] <a href="https://www.google.com/search?tbm=isch&q=[EXACT_ENGLISH_DRUG_NAME]" target="_blank" class="img-link-btn"><i class="fa-solid fa-image"></i> عرض صور المنتج 🖼️</a>
-* **نوع المستحضر:** ...
-* **الشكل الدوائي والتركيز:** ...
-* **المادة الفعالة / المكونات:** ...
-* **الجرعة/التعليمات المكتوبة:** ...
-* **دواعي الاستعمال:** ...
-* **البدائل بالسوق المصري:** ...
-
-(استمر بنفس النمط لكل العناصر دون استثناء صنف واحد)
+(استمر بنفس النمط لكافة الأدوية في الروشتة)
 
 ## ⚠️ إرشادات وملاحظات صيدلانية:
-(أي تعارضات، تنبيهات، أو ملاحظات خاصة بالاستخدام)`;
+(أهم التعارضات، التنبيهات، أو التعليمات الطبية الهامة المرتبطة بالروشتة)`;
 
             const requestData = {
                 systemInstruction: {
@@ -319,11 +302,11 @@ STRICT OUTPUT FORMAT RULES:
                 contents: [{
                     parts: [
                         { inlineData: { mimeType: 'image/jpeg', data: compressedImageBase64 } },
-                        { text: "اقرأ الروشتة بالكامل بخبرة صيدلي خبير. طابق كل الحروف والخطوط بدقة بالأسماء التجارية الحقيقية المسجلة وتأكد من عدم ترك أي صنف." }
+                        { text: "اقرأ الروشتة بالكامل وأخرج النتيجة بالهيكلة المحددة فقط بدون أي مقدمات أو خطوات تفكير." }
                     ]
                 }],
                 generationConfig: {
-                    temperature: 0.1,
+                    temperature: 0.0,
                     maxOutputTokens: 4096
                 }
             };
@@ -349,4 +332,4 @@ STRICT OUTPUT FORMAT RULES:
         }
     </script>
 </body>
-                </html>
+                    </html>
