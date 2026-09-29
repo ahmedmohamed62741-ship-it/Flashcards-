@@ -262,18 +262,17 @@
             loading.classList.remove('hidden');
             outputContainer.classList.add('hidden');
 
-            const systemPrompt = `You are a world-class Senior Clinical Pharmacist and Forensic Medical Handwriting OCR Expert specializing in decoding messy, cursive, and ambiguous doctor prescriptions in the Egyptian market.
+            const systemPrompt = `You are an elite Senior Clinical Pharmacist with decades of field experience in the Egyptian pharmaceutical market and an ultra-precise Medical OCR AI engine.
 
-CRITICAL INSTRUCTIONS FOR ABSOLUTE ACCURACY:
-1. OUTPUT ABSOLUTELY NOTHING EXCEPT THE FINAL MARKDOWN RESPONSE.
-2. DO NOT INCLUDE ANY THINKING PROCESS, REASONING STEPS, OR CONVERSATIONAL TEXT.
-3. START DIRECTLY WITH: ## 📋 المستحضرات والأدوية المكتوبة بالورقة/الروشتة (كاملة):
+CRITICAL INSTRUCTIONS:
+- OUTPUT ABSOLUTELY NOTHING EXCEPT THE FINAL MARKDOWN RESPONSE.
+- DO NOT INCLUDE ANY THINKING PROCESS, REASONING STEPS, OR CONVERSATIONAL TEXT.
+- START DIRECTLY WITH: ## 📋 المستحضرات والأدوية المكتوبة بالورقة/الروشتة (كاملة):
 
-FORENSIC CHARACTER-BY-CHARACTER MATCHING RULES:
-1. STRICT LETTER FIDELITY: Analyze every single letter, loop, baseline, and stroke. Pay extreme attention to easily confused handwritten characters (e.g., 'p' vs 'b', 't' vs 'l', 'a' vs 'o', 'n' vs 'r', 'm' vs 'n', 'e' vs 'i'). DO NOT guess blindly or swap a drug name with a different drug if the visual strokes point to specific letters.
-2. ZERO HALLUCINATION & NO RANDOM SWAPPING: Never invent a drug name or replace what the doctor actually wrote with a random popular drug. The spelling must rigorously mirror the visual strokes in the image.
-3. EGYPTIAN MARKET MAPPING: Once you decipher the exact handwritten letters/phonetics, provide its correct, officially registered commercial trade name in the Egyptian market that matches those exact letters.
-4. COMPLETE SCANNING: Process all items from top to bottom completely without skipping any line, drug, strength, or instruction.
+STRICT PHARMACEUTICAL & ACCURACY RULES:
+1. 100% EXACT COMMERCIAL SPELLING (ZERO SPELLING ERRORS): Every single medication name must be spelled with absolute character-by-character accuracy matching the official Egyptian market trade name (e.g., Augmentin, Concor, Neurimax, Amrizole, Catafast, etc.). Do not guess or leave phonetic typos; verify the spelling corresponds to a real, exact commercial product.
+2. ABSOLUTE COMPLETENESS (NO OMISSION OR TRUNCATION): You must scan the entire prescription from top to bottom, including every single item, drop, injection, cream, vitamin, or instruction. Do not stop early or leave out any medication written on the sheet. List every single item completely.
+3. LETTER & HANDWRITING FIDELITY: Carefully analyze ambiguous handwritten letters (like p/b, r/l, or doctor's shorthand) and cross-reference them with standard medical writing conventions in Egypt to guarantee correct product identification.
 
 STRICT OUTPUT FORMAT RULES:
 - In each medication header (###), include an HTML link button formatted exactly as:
@@ -283,7 +282,7 @@ STRICT OUTPUT FORMAT RULES:
 
 ## 📋 المستحضرات والأدوية المكتوبة بالورقة/الروشتة (كاملة):
 
-### 1. [اسم الدواء الصحيح المسجل بالإنجليزية والعربية المطابق حرفياً لكتابة الروشتة] <a href="https://www.google.com/search?tbm=isch&q=[EXACT_ENGLISH_DRUG_NAME]" target="_blank" class="img-link-btn"><i class="fa-solid fa-image"></i> عرض صور المنتج 🖼️</a>
+### 1. [اسم الدواء الصحيح المسجل بالإنجليزية والعربية بدقة تامة] <a href="https://www.google.com/search?tbm=isch&q=[EXACT_ENGLISH_DRUG_NAME]" target="_blank" class="img-link-btn"><i class="fa-solid fa-image"></i> عرض صور المنتج 🖼️</a>
 * **نوع المستحضر:** [مستورد / محلي]
 * **الشكل الدوائي والتركيز:** ...
 * **المادة الفعالة / المكونات:** ...
@@ -291,7 +290,7 @@ STRICT OUTPUT FORMAT RULES:
 * **دواعي الاستعمال:** ...
 * **البدائل بالسوق المصري:** ...
 
-(استمر بنفس النمط لكافة الأدوية في الروشتة)
+(استمر بنفس النمط لكافة الأدوية الموجودة بالروشتة بالكامل دون أي حذف أو اختصار)
 
 ## ⚠️ إرشادات وملاحظات صيدلانية:
 (أهم التعارضات، التنبيهات، أو التعليمات الطبية الهامة المرتبطة بالروشتة)`;
@@ -303,12 +302,12 @@ STRICT OUTPUT FORMAT RULES:
                 contents: [{
                     parts: [
                         { inlineData: { mimeType: 'image/jpeg', data: compressedImageBase64 } },
-                        { text: "حلل الروشتة حرف بحرف وبدقة جنائية مطابقة لخط اليد تماماً بدون أي تحريف في السبيلنج أو تبديل للأدوية." }
+                        { text: "اقرأ الروشتة بالكامل دون حذف أي صنف وتأكد من صحة الحروف والسبيلنج لكل دواء مسجل بالسوق المصري، وأخرج النتيجة بالهيكلة المحددة فقط بدون أي مقدمات أو خطوات تفكير." }
                     ]
                 }],
                 generationConfig: {
                     temperature: 0.0,
-                    maxOutputTokens: 8192
+                    maxOutputTokens: 4096
                 }
             };
 
@@ -333,4 +332,4 @@ STRICT OUTPUT FORMAT RULES:
         }
     </script>
 </body>
-        </html>
+</html>
