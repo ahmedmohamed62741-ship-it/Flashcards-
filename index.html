@@ -68,7 +68,7 @@
             فك شفرة الأوراق والروشتات الطبية 🩺
         </h1>
         <p class="text-slate-400 text-sm md:text-base max-w-xl mx-auto">
-            قراءة شاملة فائقة الدقة لأي ورقة أدوية (عربي/إنجليزي) ومطابقتها بالسوق مع إمكانية معاينة صور الدواء.
+            قراءة شاملة فائقة الدقة لأي ورقة أدوية ومطابقتها بالسوق المصري مع إمكانية معاينة صور الدواء.
         </p>
     </header>
 
@@ -76,17 +76,14 @@
 
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-7 shadow-xl space-y-5">
             
-            <!-- خانة إدخال مفتاح الـ API -->
+            <!-- خانة إدخال مفاتيح الـ API (تدعم أكثر من مفتاح مفصول بفاصلة) -->
             <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
                 <label for="apiKeyInput" class="block text-xs font-bold text-slate-300 flex items-center justify-between">
-                    <span>🔑 مفتاح API الخاص بك (Gemini API Key):</span>
+                    <span>🔑 مفاتيح API (يمكنك وضع أكثر من مفتاح مفصول بفاصلة ,):</span>
                     <span class="text-[10px] text-emerald-400 font-normal">يُحفظ تلقائياً في متصفحك</span>
                 </label>
                 <div class="relative">
-                    <input type="password" id="apiKeyInput" oninput="saveApiKey()" placeholder="أدخل مفتاحك الخاص هنا..." class="w-full bg-slate-900 border border-slate-700 rounded-lg py-2 px-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono tracking-wider pl-10">
-                    <button type="button" onclick="toggleKeyVisibility()" class="absolute left-3 top-2.5 text-slate-400 hover:text-slate-200 text-xs">
-                        <i id="keyVisibilityIcon" class="fa-solid fa-eye"></i>
-                    </button>
+                    <input type="text" id="apiKeyInput" oninput="saveApiKey()" placeholder="أدخل المفتاح الأول، أو عدة مفاتيح مفصولة بـ ," class="w-full bg-slate-900 border border-slate-700 rounded-lg py-2 px-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono tracking-wider">
                 </div>
             </div>
 
@@ -119,7 +116,7 @@
 
         <div id="loading" class="hidden text-center py-6 space-y-2">
             <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent"></div>
-            <p id="loadingText" class="text-slate-400 text-xs font-semibold animate-pulse">جاري الفحص الصيدلاني فائق السرعة...</p>
+            <p id="loadingText" class="text-slate-400 text-xs font-semibold animate-pulse">جاري الفحص الصيدلاني الشامل وتدقيق الأصناف...</p>
         </div>
 
         <div id="outputContainer" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
@@ -142,37 +139,19 @@
 
     <script>
         const MODEL_NAME = "gemini-3.6-flash";
-        const DEFAULT_API_KEY = ""; 
-        
         let compressedImageBase64 = null;
 
         window.addEventListener('DOMContentLoaded', () => {
-            const savedKey = localStorage.getItem('user_gemini_api_key');
+            const savedKey = localStorage.getItem('user_gemini_api_keys');
             const keyInput = document.getElementById('apiKeyInput');
             if (savedKey && savedKey.trim() !== "") {
                 keyInput.value = savedKey;
-            } else {
-                keyInput.value = DEFAULT_API_KEY;
             }
         });
 
         function saveApiKey() {
             const keyInput = document.getElementById('apiKeyInput').value.trim();
-            localStorage.setItem('user_gemini_api_key', keyInput);
-        }
-
-        function toggleKeyVisibility() {
-            const keyInput = document.getElementById('apiKeyInput');
-            const icon = document.getElementById('keyVisibilityIcon');
-            if (keyInput.type === "password") {
-                keyInput.type = "text";
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                keyInput.type = "password";
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
+            localStorage.setItem('user_gemini_api_keys', keyInput);
         }
 
         function handleImageSelect(event) {
@@ -184,7 +163,7 @@
             const statusText = document.getElementById('imageStatus');
 
             previewContainer.classList.remove('hidden');
-            statusText.innerText = "جاري معالجة الصورة...";
+            statusText.innerText = "جاري تحسين وضوح الصورة وتجهيز حواف الخط...";
 
             const reader = new FileReader();
             reader.onload = function (e) {
@@ -193,7 +172,7 @@
                     const canvas = document.createElement('canvas');
                     let width = img.width;
                     let height = img.height;
-                    const maxDim = 1200; // تقليص الأبعاد قليلاً لتسريع الضغط والرفع
+                    const maxDim = 1200; // حجم مثالي وسريع للتحميل والضغط
 
                     if (width > height && width > maxDim) {
                         height = Math.round((height * maxDim) / width);
@@ -208,70 +187,104 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.85); // تقليل طفيف لنسبة الضغط لسرعة أسرع
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.90);
                     compressedImageBase64 = dataUrl.split(',')[1];
                     previewImg.src = dataUrl;
-                    statusText.innerText = "جاهز للفحص الفوري ⚡";
+                    statusText.innerText = "تم رفع الصورة بنجاح وجاهزة للتحليل ⚡";
                 };
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
 
-        // إعادة محاولة سريعة وخفيفة جداً في الخلفية
-        async function fetchWithAutoRetry(url, options, maxRetries = 2) {
-            for (let attempt = 1; attempt <= maxRetries; attempt++) {
-                try {
-                    const response = await fetch(url, options);
-                    if ((response.status === 429 || response.status === 503) && attempt < maxRetries) {
-                        await new Promise(resolve => setTimeout(resolve, 1500)); // انتظار قصير جداً
-                        continue;
+        // دالة الدوران التلقائي للمفاتيح لتجاوز الضغط والكوتا فوراً
+        async function fetchWithKeyRotation(requestData) {
+            const rawKeyInput = document.getElementById('apiKeyInput').value.trim();
+            if (!rawKeyInput) {
+                throw new Error("برجاء أدخل مفتاح API في الخانة المخصصة بالأعلى أولاً!");
+            }
+
+            const keys = rawKeyInput.split(',').map(k => k.trim()).filter(k => k);
+            const loadingText = document.getElementById('loadingText');
+
+            for (let i = 0; i < keys.length; i++) {
+                const currentKey = keys[i];
+                for (let attempt = 1; attempt <= 2; attempt++) {
+                    try {
+                        if (keys.length > 1) {
+                            loadingText.innerText = `جاري الفحص باستخدام المفتاح (${i + 1} من ${keys.length})... ⚡`;
+                        }
+                        
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${currentKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(requestData)
+                        });
+
+                        if (response.status === 429 || response.status === 503) {
+                            await new Promise(r => setTimeout(r, 1500));
+                            continue;
+                        }
+
+                        const data = await response.json();
+                        
+                        // إذا حدث تجاوز كوتا لهذا المفتاح، انتقل فوراً للمفتاح التالي
+                        if (data.error && (data.error.code === 429 || data.error.status === "RESOURCE_EXHAUSTED")) {
+                            break; 
+                        }
+
+                        if (response.ok && data.candidates && data.candidates[0]) {
+                            return data;
+                        } else if (data.error) {
+                            throw new Error(data.error.message);
+                        }
+                    } catch (err) {
+                        if (i === keys.length - 1 && attempt === 2) throw err;
                     }
-                    return response;
-                } catch (err) {
-                    if (attempt === maxRetries) throw err;
-                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
             }
+            throw new Error("تم استنفاد حدود الاستهلاك (Quota) لجميع المفاتيح المدخلة. يرجى إضافة مفتاح جديد أو الانتظار قليلاً.");
         }
 
         async function processPrescription() {
-            const activeApiKey = document.getElementById('apiKeyInput').value.trim();
-
-            if (!activeApiKey) {
-                alert("برجاء أدخل مفتاح API في الخانة المخصصة بالأعلى أولاً!");
-                return;
-            }
-
             if (!compressedImageBase64) {
                 alert("برجاء اختيار صورة أو التقاطها بالكاميرا أولاً!");
                 return;
             }
 
+            const processBtn = document.getElementById('processBtn');
             const loading = document.getElementById('loading');
             const loadingText = document.getElementById('loadingText');
             const outputContainer = document.getElementById('outputContainer');
             const outputContent = document.getElementById('outputContent');
 
-            loadingText.innerText = "جاري فحص الروشتة وإظهار النتائج فوراً...";
+            // قفل الزر لمنع الطلبات المتكررة
+            processBtn.disabled = true;
+            processBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            loadingText.innerText = "جاري الفحص الصيدلاني الشامل ومطابقة الأصناف المكتوبة بدقة...";
             loading.classList.remove('hidden');
             outputContainer.classList.add('hidden');
 
-            const systemPrompt = `You are an elite Senior Clinical Pharmacist with an ultra-precise Medical OCR AI engine.
+            const systemPrompt = `You are an elite Senior Clinical Pharmacist with decades of field experience and an ultra-precise Medical OCR AI engine.
 
 CRITICAL PHARMACEUTICAL & OCR RULES:
 1. ZERO HALLUCINATIONS / ABSOLUTE ACCURACY:
-   - Do NOT invent or output non-existent words (e.g., NEVER output fake words like "ezasa").
-   - Every identified item MUST be an exact, real, officially registered commercial trade name available in pharmacies (e.g., Ezacard, Doliprane, Augmentin).
-2. LETTER FIDELITY:
-   - Carefully analyze handwritten letters. Distinguish 'p' vs 'b' (e.g., Doliprane must have 'p').
+   - Do NOT invent, guess, or output non-existent words or fake phonetic terms.
+   - Every single identified item MUST be an exact, real, officially registered commercial trade name available in pharmacies (e.g., Ezacard, Doliprane, Augmentin).
+2. LETTER FIDELITY & STROKE ANALYSIS:
+   - Carefully analyze every handwritten letter and stroke. Distinguish 'p' vs 'b', 't' vs 'l', and medical symbols.
 3. CONTEXTUAL TRIANGULATION:
-   - Combine trade name, strength/form (e.g., 75mg, Tab), and instructions underneath.
+   - For every medication line, combine:
+     a) Trade name.
+     b) Strength/form (e.g., 75mg, Tab, Vial).
+     c) Instructions underneath (e.g., قرص يومياً).
+   - This ensures the exact matching product.
 4. COMPLETE SCANNING:
-   - Process all items from top to bottom completely.
+   - Process all items from top to bottom completely without skipping a single line.
 
 STRICT OUTPUT FORMAT RULES:
-- In each medication header (###), include an HTML link button:
+- In each medication header (###), include an HTML link button to view real images of the drug package on Google Images formatted exactly as:
   <a href="https://www.google.com/search?tbm=isch&q=[EXACT_CORRECT_ENGLISH_DRUG_NAME]+[STRENGTH]" target="_blank" class="img-link-btn"><i class="fa-solid fa-image"></i> عرض صور المنتج 🖼️</a>
 
 - Output ONLY clean structured Arabic Markdown strictly matching this structure:
@@ -286,10 +299,18 @@ STRICT OUTPUT FORMAT RULES:
 * **دواعي الاستعمال:** ...
 * **البدائل بالسوق المصري:** ...
 
+### 2. [اسم الدواء الثاني الصحيح المسجل] <a href="https://www.google.com/search?tbm=isch&q=[EXACT_ENGLISH_DRUG_NAME]" target="_blank" class="img-link-btn"><i class="fa-solid fa-image"></i> عرض صور المنتج 🖼️</a>
+* **نوع المستحضر:** ...
+* **الشكل الدوائي والتركيز:** ...
+* **المادة الفعالة / المكونات:** ...
+* **الجرعة/التعليمات المكتوبة:** ...
+* **دواعي الاستعمال:** ...
+* **البدائل بالسوق المصري:** ...
+
 (استمر بنفس النمط لكل العناصر دون استثناء صنف واحد)
 
 ## ⚠️ إرشادات وملاحظات صيدلانية:
-(أي تعارضات أو تنبيهات)`;
+(أي تعارضات، تنبيهات، أو ملاحظات خاصة بالاستخدام)`;
 
             const requestData = {
                 systemInstruction: {
@@ -298,39 +319,27 @@ STRICT OUTPUT FORMAT RULES:
                 contents: [{
                     parts: [
                         { inlineData: { mimeType: 'image/jpeg', data: compressedImageBase64 } },
-                        { text: "اقرأ الروشتة بسرعة ودقة صيدلانية تامة دون أي تأخير أو اختلاق." }
+                        { text: "اقرأ الروشتة بالكامل بخبرة صيدلي خبير. طابق كل الحروف والخطوط بدقة بالأسماء التجارية الحقيقية المسجلة وتأكد من عدم ترك أي صنف." }
                     ]
                 }],
                 generationConfig: {
-                    temperature: 0.0,
-                    maxOutputTokens: 2048 // تقليص التوكنز لتوليد الإجابة بسرد فائق السرعة
+                    temperature: 0.1,
+                    maxOutputTokens: 4096
                 }
             };
 
             try {
-                const response = await fetchWithAutoRetry(
-                    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${activeApiKey}`,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(requestData)
-                    }
-                );
-
-                const data = await response.json();
-
-                if (response.ok && data.candidates && data.candidates[0] && data.candidates[0].content) {
-                    const rawMarkdown = data.candidates[0].content.parts[0].text;
-                    outputContent.innerHTML = window.marked ? marked.parse(rawMarkdown) : rawMarkdown;
-                    outputContainer.classList.remove('hidden');
-                } else if (data.error) {
-                    alert("خطأ من السيرفر:\n" + data.error.message);
-                }
+                const data = await fetchWithKeyRotation(requestData);
+                const rawMarkdown = data.candidates[0].content.parts[0].text;
+                outputContent.innerHTML = window.marked ? marked.parse(rawMarkdown) : rawMarkdown;
+                outputContainer.classList.remove('hidden');
             } catch (err) {
-                alert("خطأ اتصال بالشبكة: " + err.message);
+                alert("خطأ أثناء المعالجة: " + err.message);
+            } finally {
+                loading.classList.add('hidden');
+                processBtn.disabled = false;
+                processBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
-
-            loading.classList.add('hidden');
         }
 
         function copyResult() {
@@ -340,4 +349,4 @@ STRICT OUTPUT FORMAT RULES:
         }
     </script>
 </body>
-    </html>
+                </html>
