@@ -100,7 +100,7 @@
 
                     <label for="galleryInput" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold py-4 px-4 rounded-xl text-center flex flex-col items-center justify-center gap-1.5 transition border border-slate-700 shadow-md cursor-pointer select-none">
                         <i class="fa-solid fa-images text-2xl text-blue-400"></i>
-                        <span class="text-sm">اختيار صورة من المعرض 🖼️️</span>
+                        <span class="text-sm">اختيار صورة من المعرض 🖼️</span>
                         <input type="file" id="galleryInput" accept="image/*" onchange="handleImageSelect(event)" class="hidden">
                     </label>
                 </div>
@@ -224,18 +224,24 @@
             reader.readAsDataURL(file);
         }
 
-        async function fetchWithAutoRetry(url, options, maxRetries = 3) {
+        // نظام إعادة المحاولة التلقائي الذكي والخفي خلف الكواليس (بدون تدخل منك)
+        async function fetchWithAutoRetry(url, options, maxRetries = 4) {
             const loadingText = document.getElementById('loadingText');
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
-                const response = await fetch(url, options);
-                
-                if (response.status === 429 && attempt < maxRetries) {
-                    loadingText.innerText = `السيرفر مشغول حالياً بطلبات متتالية، جاري الانتظار تلقائياً وإعادة المحاولة (${attempt}/${maxRetries})... ⏳`;
-                    await new Promise(resolve => setTimeout(resolve, 12000));
-                    loadingText.innerText = "جاري إعادة الفحص والمطابقة الصيدلانية...";
-                    continue;
+                try {
+                    const response = await fetch(url, options);
+                    
+                    // إذا واجه ضغط مؤقت (429 أو 503)، يعيد المحاولة تلقائياً بانتظار قصير
+                    if ((response.status === 429 || response.status === 503) && attempt < maxRetries) {
+                        loadingText.innerText = `السيرفر مشغول قليلاً، جاري إعادة المحاولة تلقائياً (${attempt}/${maxRetries})... ⏳`;
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        continue;
+                    }
+                    return response;
+                } catch (err) {
+                    if (attempt === maxRetries) throw err;
+                    await new Promise(resolve => setTimeout(resolve, 2500));
                 }
-                return response;
             }
         }
 
@@ -257,38 +263,28 @@
             const outputContainer = document.getElementById('outputContainer');
             const outputContent = document.getElementById('outputContent');
 
-            loadingText.innerText = "جاري فحص الحروف بدقة صيدلانية فائقة وتدقيق الأصناف المكتوبة والمطابقة مع قواعد البيانات...";
+            loadingText.innerText = "جاري الفحص الصيدلاني المتقدم ومطابقة الحروف والخطوط...";
             loading.classList.remove('hidden');
             outputContainer.classList.add('hidden');
 
-            const systemPrompt = `You are a Senior Expert Clinical Pharmacist with decades of experience and an ultra-precise Medical OCR AI engine.
+            const systemPrompt = `You are an elite Senior Clinical Pharmacist with unmatched expertise in reading challenging doctor handwriting and an ultra-precise Medical OCR AI engine.
 
-CRITICAL MANDATORY OCR & PHARMACEUTICAL RULES:
+ABSOLUTE CLINICAL & PHARMACEUTICAL RULES (ZERO ERROR TOLERANCE):
+1. ZERO HALLUCINATIONS / NO PSEUDO-NAMES:
+   - It is strictly forbidden to invent, guess, or output non-existent words or phonetic typos (e.g. NEVER output fake names like "ezasa", "dolibran", "cefotac").
+   - Every single drug identified MUST be 100% a real, officially registered commercial trade name available in the pharmaceutical market (such as Ezacard, Doliprane, Augmentin, etc.).
+2. EXACT LETTER FIDELITY & STROKE ANALYSIS:
+   - Microscopically analyze every letter stroke. Pay extreme attention to distinguishing letters like 'p' vs 'b' (e.g., Doliprane must retain 'p'), 't' vs 'l', and specific medical abbreviations.
+3. CONTEXTUAL TRIANGULATION (NAME + STRENGTH + INSTRUCTIONS):
+   - For every medication line, correlate:
+     a) The handwritten trade name.
+     b) The accompanying strength/form (e.g., 75mg, 1GB, Tab, Vial).
+     c) The dosing frequency underneath (e.g., قرص يومياً، كل 8 ساعات).
+   - This ensures absolute accuracy in identifying the exact commercial product.
+4. COMPREHENSIVE SCANNING:
+   - Process all items from top to bottom completely without skipping any line or item.
 
-1. ABSOLUTE LETTER ACCURACY & VISUAL FIDELITY:
-   - Microscopically inspect every letter stroke, ascender, and descender.
-   - RESPECT VISIBLE DISTINCT LETTERS STRICTLY:
-     * If the descender letter 'p' is visible (e.g. in "Doliprane", "Dolipran", "Panadol", "Plavix", "Prospan"), NEVER ignore or substitute 'p' with 'b' or invent a non-existent brand name like "dolibran".
-     * Differentiate: 'p' vs 'b', 'd' vs 'cl', 't' vs 'l', 'Cef' vs 'Alpha', 'Ezacard' vs 'ezasa'.
-
-2. MANDATORY REAL DRUG MAPPING & PHONETIC CORRECTION (ZERO PSEUDO-NAMES / ZERO HALLUCINATIONS):
-   - ABSOLUTELY FORBIDDEN to output non-existent, typos, or fake phonetic words (e.g. NEVER output "ezasa", "dolibran", "cefotac", "alphintren").
-   - IF OCR generates a string that does NOT exist in registered drug databases (like Egyptian Drug Authority EDA / Global FDA catalogs), YOU MUST IMMEDIATELY CROSS-CHECK & CORRECT IT to the real registered commercial trade name that matches the handwriting pattern and dosage context.
-     * Example: If handwritten strokes look like "ezasa" or "Eza-card", map it to the REAL registered drug "Ezacard" (or "Ezetrol" / "Ezasmart" depending on strength/context).
-     * Example: If handwritten strokes look like "Dolipran" / "Doliprane", output "Doliprane" with 'p'.
-   - Every identified drug MUST be an EXACT real registered product available in pharmacies.
-
-3. CONTEXTUAL TRIANGULATION (READ NEXT TO & BELOW EACH ITEM):
-   - For EVERY medication line, inspect:
-     a) Handwritten trade name letters.
-     b) Numbers, strengths, or dosage forms beside the name ("75mg", "1000mg", "500mg", "Vial", "Tab").
-     c) Handwritten instructions directly underneath ("قرص يومياً", "قرص بعد الأكل", "قرص كل 8 ساعات").
-   - COMBINE these 3 data points to confirm the EXACT REAL REGISTERED DRUG (e.g., "Ezacard 75mg Tab" for blood thinner/aspirin).
-
-4. BALANCED & COMPLETE SCANNING (TOP TO BOTTOM):
-   - Process ALL items written on the sheet sequentially from top to bottom without skipping a single line.
-
-STRICT OUTPUT RULES:
+STRICT OUTPUT FORMAT RULES:
 - In each medication header (###), include an HTML link button to view real images of the drug package on Google Images formatted exactly as:
   <a href="https://www.google.com/search?tbm=isch&q=[EXACT_CORRECT_ENGLISH_DRUG_NAME]+[STRENGTH]" target="_blank" class="img-link-btn"><i class="fa-solid fa-image"></i> عرض صور المنتج 🖼️</a>
 
@@ -324,11 +320,11 @@ STRICT OUTPUT RULES:
                 contents: [{
                     parts: [
                         { inlineData: { mimeType: 'image/jpeg', data: compressedImageBase64 } },
-                        { text: "اقرأ الورقة بالكامل بدقة صيدلي خبير. يمنع منعاً باتاً كِتابة أسماء وهمية مثل ezasa بل يجب مطابقتها وتصحيحها فوراً للاسم التجاري الحقيقي المسجل في الصيدليات (مثل Ezacard)، مع الحفاظ على دقة الحروف مثل p في Doliprane والمسح الكامل لجميع الأصناف." }
+                        { text: "قم بقراءة الروشتة بخبرة صيدلي أخصائي. طابق كل حرف بدقة تامة مع الأسماء التجارية الحقيقية المسجلة وتجنب أي أسماء وهمية تماماً." }
                     ]
                 }],
                 generationConfig: {
-                    temperature: 0.05,
+                    temperature: 0.0,
                     maxOutputTokens: 4096
                 }
             };
@@ -353,7 +349,7 @@ STRICT OUTPUT RULES:
                     alert("خطأ من السيرفر:\n" + data.error.message);
                 }
             } catch (err) {
-                alert("خطأ اتصال: " + err.message);
+                alert("خطأ اتصال بالشبكة، يرجى المحاولة لاحقاً: " + err.message);
             }
 
             loading.classList.add('hidden');
@@ -366,4 +362,4 @@ STRICT OUTPUT RULES:
         }
     </script>
 </body>
-    </html>
+</html>
