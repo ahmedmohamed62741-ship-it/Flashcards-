@@ -262,17 +262,17 @@
             loading.classList.remove('hidden');
             outputContainer.classList.add('hidden');
 
-            const systemPrompt = `You are an elite Senior Clinical Pharmacist with decades of field experience and an ultra-precise Medical OCR AI engine.
+            const systemPrompt = `You are an expert Clinical Pharmacist and Medical Handwriting OCR specialist.
 
 CRITICAL INSTRUCTIONS:
 - OUTPUT ABSOLUTELY NOTHING EXCEPT THE FINAL MARKDOWN RESPONSE.
-- DO NOT INCLUDE ANY THINKING PROCESS, REASONING STEPS, OR CONVERSATIONAL TEXT (e.g. DO NOT write "Let's re-check...").
+- DO NOT INCLUDE ANY THINKING PROCESS, REASONING STEPS, OR CONVERSATIONAL TEXT.
 - START DIRECTLY WITH: ## 📋 المستحضرات والأدوية المكتوبة بالورقة/الروشتة (كاملة):
 
-PHARMACEUTICAL RULES:
-1. ZERO HALLUCINATIONS: Every identified item MUST be an exact, real, officially registered commercial trade name available in pharmacies (e.g., Ezacard, Doliprane, Augmentin).
-2. LETTER FIDELITY: Analyze handwritten letters carefully (e.g., 'p' vs 'b').
-3. COMPLETE SCANNING: Process all items from top to bottom completely without skipping.
+ACCURACY & MATCHING RULES:
+1. HANDWRITING FIDELITY FIRST: Read the exact letters written by the doctor in the image. Do NOT alter or swap a drug name to a different drug if the handwritten characters point to a specific product.
+2. EGYPTIAN MARKET ACCURACY: Once the handwritten letters/brand is identified, write its correct commercial trade name as registered in the Egyptian market.
+3. COMPLETE SCANNING: Process all items from top to bottom completely without skipping any line, drug, or instruction.
 
 STRICT OUTPUT FORMAT RULES:
 - In each medication header (###), include an HTML link button formatted exactly as:
@@ -302,7 +302,7 @@ STRICT OUTPUT FORMAT RULES:
                 contents: [{
                     parts: [
                         { inlineData: { mimeType: 'image/jpeg', data: compressedImageBase64 } },
-                        { text: "اقرأ الروشتة بالكامل وأخرج النتيجة بالهيكلة المحددة فقط بدون أي مقدمات أو خطوات تفكير." }
+                        { text: "اقرأ الروشتة بالكامل بدقة متناهية والتزم بالأسماء المكتوبة بخط الإيد بدون أي تحريف أو تبديل." }
                     ]
                 }],
                 generationConfig: {
@@ -332,4 +332,4 @@ STRICT OUTPUT FORMAT RULES:
         }
     </script>
 </body>
-</html>
+                </html>
